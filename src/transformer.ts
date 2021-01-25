@@ -28,14 +28,14 @@ const DefaultTransformerOptions: ITransformerOptions = {
 }
 
 export function createSourceFileTransformerFactory(program: ts.Program, options: Partial<ITransformerOptions> = {}): ts.TransformerFactory<ts.SourceFile> {
-    options = Object.assign({}, DefaultTransformerOptions, options);
+    const config = Object.assign({}, DefaultTransformerOptions, options) as ITransformerOptions;
     const checker = program.getTypeChecker();
     // find the module declaration of our package
     const module = checker.getAmbientModules().find(symbol => ts.isModuleDeclaration(symbol.valueDeclaration) && symbol.valueDeclaration.name.text === PACKAGE_NAME);
     if (!module) {
         throw new Error(ERROR.NoModuleDeclarationFound);
     }
-    return createContextTransformer(checker, module.valueDeclaration as ts.ModuleDeclaration, options);
+    return createContextTransformer(checker, module.valueDeclaration as ts.ModuleDeclaration, config);
 }
 
 function createContextTransformer(checker: ts.TypeChecker, module: ts.ModuleDeclaration, options: ITransformerOptions) {

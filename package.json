@@ -1,7 +1,11 @@
 {
     "name": "ts-transform-runtime-check",
     "version": "0.0.1-alpha1",
+    "main": "dist/index.js",
     "description": "Typescript AST transformer to generate type checks at runtime",
+    "scripts": {
+        "build": "tsc"
+    },
     "engines": {
         "node": ">=12.10.0",
         "npm": ">=6.10.3"
