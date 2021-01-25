@@ -1,10 +1,7 @@
 {
-    "name": "ts-transform-check",
-    "version": "1.0.0",
-    "description": "",
-    "scripts": {
-        "test": "ttsc"
-    },
+    "name": "ts-transform-runtime-check",
+    "version": "0.0.1-alpha1",
+    "description": "Typescript AST transformer to generate type checks at runtime",
     "engines": {
         "node": ">=12.10.0",
         "npm": ">=6.10.3"
@@ -13,7 +10,11 @@
         "last 1 chrome version",
         "last 1 firefox version"
     ],
-    "author": "",
+    "author": "Kevin Ramharak <kevin@ramharak.nl>",
+    "repository": {
+        "type": "git",
+        "url": "https://https://github.com/kevinramharak/ts-transform-runtime-check.git"
+    },
     "license": "ISC",
     "dependencies": {
         "@types/node": "^14.14.20",
