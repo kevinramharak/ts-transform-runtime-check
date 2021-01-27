@@ -1,4 +1,3 @@
-/// <reference path="./globals.d.ts" />
 
 import ts from 'typescript';
 import { transformers } from './transformers';
