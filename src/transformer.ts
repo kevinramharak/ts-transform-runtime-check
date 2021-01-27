@@ -1,3 +1,5 @@
+/// <reference path="./globals.d.ts" />
+
 import ts from 'typescript';
 import { transformers } from './transformers';
 import { visitCallExpresion, visitImportDeclaration } from './visitors';
@@ -74,8 +76,7 @@ function createNodeVisitor(checker: ts.TypeChecker, context: ts.TransformationCo
         if (ts.isCallExpression(node)) {
             return visitCallExpresion(node, checker, context, transformers);
         }
-
-        // TODO: maybe write some event mechanism to allow a hook for whenever an identifier / type gets assigned to anything?
+        
         if (options.throwOnInvalidUse || options.warnOnInvalidUse) {
             if (ts.isIdentifier(node)) {
                 const type = checker.getTypeAtLocation(node);
@@ -84,7 +85,9 @@ function createNodeVisitor(checker: ts.TypeChecker, context: ts.TransformationCo
                     if (options.throwOnInvalidUse) {
                         throw new TypeError(message);
                     } else if (options.warnOnInvalidUse) {
-                        console.warn(message);
+                        if (typeof console !== 'undefined' && console != null && typeof console.warn === 'function') {
+                            console.warn(message);
+                        }
                     }
                 }
             }

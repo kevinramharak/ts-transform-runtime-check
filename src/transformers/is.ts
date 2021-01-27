@@ -1,3 +1,6 @@
+// allows us to see more of the internal TS api
+import {} from 'ts-expose-internals';
+
 import ts from 'typescript';
 import { branch } from '../branch';
 import { ITransformerOptions } from '../transformer';
@@ -366,29 +369,32 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                                 },
                                 default() {
                                     const members = (is.type as ts.InterfaceType).symbol.members;
-                                    // property access requires a undefined | null check to prevent throwing a type error
-                                    // TODO: dont generate the allow property access check if its not any | unkown | null | undefined
-                                    // see: https://tc39.es/ecma262/#sec-requireobjectcoercible
-                                    const allows_property_access = context.factory.createInequality(value.node, context.factory.createNull());
                                     if (!members) {
-                                        return allows_property_access;
-                                    } else {
-                                        // TODO: figure out if it is safe to use __String to create a string literal
-                                        const array = Array.from(members as Map<ts.__String, ts.Symbol>);
-                                        return array.filter(([name, symbol]) => {
-                                            return true;
-                                        }).map(([name, symbol]) => {
-                                            const type = checker.getTypeAtLocation(symbol.valueDeclaration);
-                                            const node = context.factory.createElementAccessExpression(value.node, context.factory.createStringLiteral(name as string));
-                                            const any = checker.getAnyType();
-                                            return generateTypeCheckExpression({ type  }, { node, type: any });
-                                        }).reduce((lhs, rhs) => {
-                                            return context.factory.createLogicalAnd(
-                                                lhs,
-                                                rhs,
-                                            );
-                                        }, allows_property_access);
+                                        return context.factory.createTrue();
                                     }
+
+                                    const checks =  Array.from(members as Map<ts.__String, ts.Symbol>).filter(([name, symbol]) => {
+                                        return true;
+                                    }).map(([name, symbol]) => {
+                                        const type = checker.getTypeAtLocation(symbol.valueDeclaration);
+                                        const node = context.factory.createElementAccessExpression(value.node, context.factory.createStringLiteral(name as string));
+                                        const any = checker.getAnyType();
+                                        return generateTypeCheckExpression({ type  }, { node, type: any });
+                                    });
+                                    
+                                    // property access requires a undefined | null check to prevent throwing a type error
+                                    // see: https://tc39.es/ecma262/#sec-requireobjectcoercible
+                                    if ((value.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) {
+                                        const allows_property_access = context.factory.createInequality(value.node, context.factory.createNull());
+                                        checks.unshift(allows_property_access);
+                                    }
+
+                                    return checks.reduce((lhs, rhs) => {
+                                        return context.factory.createLogicalAnd(
+                                            lhs,
+                                            rhs,
+                                        );
+                                    });
                                 }
                             });
                         },
@@ -415,8 +421,11 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
 // - use json-schema's (at compile time and at runtime?)
 // see https://github.com/vega/ts-json-schema-generator for example
 
+/**
+ * 
+ */
 export function is(options: ITransformerOptions) {
-    return function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts.TransformationContext): ts.Expression {
+    function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts.TransformationContext): ts.Expression {
         if (!node.typeArguments || node.typeArguments.length !== 1) {
             throw new Error(ERROR.InvalidAmountOfTypeArguments);
         }
@@ -447,4 +456,6 @@ export function is(options: ITransformerOptions) {
 
         return check;
     }
+
+    return is;
 }
