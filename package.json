@@ -1,6 +1,6 @@
 {
     "name": "ts-transform-runtime-check",
-    "version": "0.0.1-alpha1",
+    "version": "0.0.1-alpha5",
     "main": "dist/index.js",
     "description": "Typescript AST transformer to generate type checks at runtime",
     "scripts": {
@@ -19,6 +19,7 @@
         "type": "git",
         "url": "https://https://github.com/kevinramharak/ts-transform-runtime-check.git"
     },
+    "types": "index.d.ts",
     "license": "ISC",
     "dependencies": {
         "@types/node": "^14.14.20",
