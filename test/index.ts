@@ -1,5 +1,3 @@
-/// <reference path="./index.d.ts" />
-
 import { is } from 'ts-transform-runtime-check';
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types#data_types
@@ -87,7 +85,7 @@ const object = {} as object;
 const objects = [
     is<object>(object),
     is<object>(object as () => {}),
-    is<object>(object as typeof require),
+    is<object>(object as typeof Number),
     is<object>(object as any),
 ];
 

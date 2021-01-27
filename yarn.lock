@@ -156,6 +156,30 @@ ts-node@^9.1.1:
     source-map-support "^0.5.17"
     yn "3.1.1"
 
+ts-transform-runtime-check@^0.0.1-alpha10:
+  version "0.0.1-alpha10"
+  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha10.tgz#f5178597688ba6f17bb8576de19b30c9f912b5c0"
+  integrity sha512-+rWM39vWlvamf1IGhWshnAN0S5aKMy6ZqtNXoTJpEfQ9+Dgf5p2irqjIciCffVN1ECRhZDCyjrTqkUcDk6wQdA==
+  dependencies:
+    ts-transform-runtime-check "^0.0.1-alpha8"
+    typescript "^4.1.3"
+
+ts-transform-runtime-check@^0.0.1-alpha12:
+  version "0.0.1-alpha12"
+  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha12.tgz#05d2313ef0d79787e13a80d77f7f979d098fb7ff"
+  integrity sha512-czbOfrRqNpW03R/8eAR5i9sXFlz6ZEGDFp3MSo3KM0JBuH9Txs1jKmVaENq5+BKoYLB1uqlkhfntW1PFzddE1A==
+  dependencies:
+    ts-transform-runtime-check "^0.0.1-alpha10"
+    typescript "^4.1.3"
+
+ts-transform-runtime-check@^0.0.1-alpha13:
+  version "0.0.1-alpha13"
+  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha13.tgz#3eb3a7c0f3817384340cdecb901ee976db752bf7"
+  integrity sha512-b8EiXPveucQnbE23hQfYHmfuFDVwkkueR4znhnoMUMV8miTxGTdgz2Rq1rajhzKkNvcs0nn8SWvboC/+Q6Upxw==
+  dependencies:
+    ts-transform-runtime-check "^0.0.1-alpha12"
+    typescript "^4.1.3"
+
 ts-transform-runtime-check@^0.0.1-alpha7:
   version "0.0.1-alpha7"
   resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha7.tgz#b79537b825abe37b44fd740ea824094d10b36a70"

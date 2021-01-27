@@ -6,9 +6,7 @@ import { visitCallExpresion, visitImportDeclaration } from './visitors';
 const PACKAGE_NAME = 'ts-transform-runtime-check';
 
 const ERROR = {
-    NoModuleDeclarationFound: `no module declaration found for '${PACKAGE_NAME}'`,
-    NoModuleDeclarationBody: `the module declaration for '${PACKAGE_NAME}' has no body`,
-    NoModuleDeclarationBlock: `the module declaration for '${PACKAGE_NAME}' does not have a body of type 'ModuleBlock'`,
+    NoModuleDeclarationFound: `no module found for '${PACKAGE_NAME}', make sure to import the module to use its features`,
     MissingTransformer: (name: string) => `function declaration ${name} does not have a registered transformer`,
 };
 
@@ -31,34 +29,38 @@ const DefaultTransformerOptions: ITransformerOptions = {
 export function createSourceFileTransformerFactory(program: ts.Program, options: Partial<ITransformerOptions> = {}): ts.TransformerFactory<ts.SourceFile> {
     const config = Object.assign({}, DefaultTransformerOptions, options) as ITransformerOptions;
     const checker = program.getTypeChecker();
-    // find the module declaration of our package
-    const module = checker.getAmbientModules().find(symbol => ts.isModuleDeclaration(symbol.valueDeclaration) && symbol.valueDeclaration.name.text === PACKAGE_NAME);
-    if (!module) {
-        throw new Error(ERROR.NoModuleDeclarationFound);
+
+    // find a file that has a a module reference to `PACKAGE_NAME`
+    // NOTE: this took ages to find out, not sure why there isn't a simpler api for this
+    const fileWithPackageAsResolvedModule = program.getSourceFiles().find(sourceFile => {
+        return sourceFile.resolvedModules && sourceFile.resolvedModules.has(PACKAGE_NAME);
+    });
+
+    if (!fileWithPackageAsResolvedModule) {
+        // TODO: what to do here? maybe return a transformer with no-ops?
+        if (typeof console && console != null && typeof console.warn === 'function') {
+            console.warn(ERROR.NoModuleDeclarationFound);
+        }
+        return createContextTransformer(checker, new Map() as any, config);
     }
-    return createContextTransformer(checker, module.valueDeclaration as ts.ModuleDeclaration, config);
+
+    const packageSourceFileInfo = fileWithPackageAsResolvedModule.resolvedModules!.get(PACKAGE_NAME)!;
+    const packageSourceFile = program.getSourceFile(packageSourceFileInfo.resolvedFileName);
+    const moduleSymbol = packageSourceFile!.symbol;
+    const exports = moduleSymbol.exports!;
+    return createContextTransformer(checker, exports, config);
 }
 
-function createContextTransformer(checker: ts.TypeChecker, module: ts.ModuleDeclaration, options: ITransformerOptions) {
-    if (!module.body) {
-        throw new Error(ERROR.NoModuleDeclarationBody);
-    }
-    if (!ts.isModuleBlock(module.body)) {
-        throw new Error(ERROR.NoModuleDeclarationBlock);
-    }
-    const body = module.body! as ts.ModuleBlock;
-    // TODO: make sure the exports match these functions
-    const declarations = body.statements.filter(statement => ts.isFunctionDeclaration(statement) && statement.name) as ts.FunctionDeclaration[];
-    const transfomerMap = new Map(declarations.map(declaration => {
-        const name = declaration.name!.text;
+function createContextTransformer(checker: ts.TypeChecker, exports: ts.SymbolTable, options: ITransformerOptions) {
+    const _transformers = [...exports as Map<ts.__String, ts.Symbol>].filter(([name, symbol]) => {
+        return name !== 'default' && ts.isFunctionDeclaration(symbol.valueDeclaration) && transformers[name as keyof typeof transformers];
+    }).map(([name, symbol]) => {
         const createTransformer = transformers[name as keyof typeof transformers];
-        if (!createTransformer) {
-            throw new Error(ERROR.MissingTransformer(name));
-        }
-        return [declaration, createTransformer(options)];
-    }));
+        return [symbol.valueDeclaration as ts.FunctionDeclaration, createTransformer(options)] as const;
+    });
+    const map = new Map(_transformers);
     return function contextTransformer(context: ts.TransformationContext) {
-        const visitor = createNodeVisitor(checker, context, transfomerMap, options);
+        const visitor = createNodeVisitor(checker, context, map, options);
         return function sourceFileVisitor(file: ts.SourceFile) {
             return ts.visitNode(file, visitor);
         }

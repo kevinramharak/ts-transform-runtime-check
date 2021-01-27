@@ -1,91 +1,91 @@
 "use strict";
-/// <reference path="./index.d.ts" />
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
+var index_1 = require("../index");
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types#data_types
 // https://www.typescriptlang.org/docs/handbook/basic-types.html
 // null
-const nullValue = null;
-const nulls = [
-    (/* null */ true),
-    (/* null */ nullValue === null),
+var nullValue = null;
+var nulls = [
+    index_1.is(nullValue),
+    index_1.is(nullValue),
 ];
 // undefined
-const undefinedValue = undefined;
-const undefineds = [
-    (/* undefined */ true),
-    (/* undefined */ undefinedValue === void 0),
+var undefinedValue = undefined;
+var undefineds = [
+    index_1.is(undefinedValue),
+    index_1.is(undefinedValue),
 ];
 // void
-const voids = [
-    (/* void */ true),
-    (/* void */ false),
-    (/* void */ undefined === void 0),
-    (/* void */ null === void 0),
+var voids = [
+    index_1.is(undefined),
+    index_1.is(null),
+    index_1.is(undefined),
+    index_1.is(null),
 ];
 // bigint
-const bigint = 1n;
-const bigintAsConst = 1n;
-const bigints = [
-    (/* bigint */ true),
-    (/* 1n */ false),
-    (/* bigint */ true),
-    (/* 1n */ true),
+var bigint = 1n;
+var bigintAsConst = 1n;
+var bigints = [
+    index_1.is(bigint),
+    index_1.is(bigint),
+    index_1.is(bigintAsConst),
+    index_1.is(bigintAsConst),
 ];
 // boolean
-const boolean = true;
-const booleanAsConst = true;
-const booleans = [
-    (/* boolean */ true),
-    (/* boolean */ true),
-    (/* true */ true),
-    (/* false */ true),
-    (/* true */ true),
-    (/* false */ false),
-    (/* boolean */ typeof boolean === "boolean"),
-    (/* true */ boolean === true),
-    (/* false */ boolean === false),
+var boolean = true;
+var booleanAsConst = true;
+var booleans = [
+    index_1.is(boolean),
+    index_1.is(booleanAsConst),
+    index_1.is(boolean),
+    index_1.is(boolean),
+    index_1.is(booleanAsConst),
+    index_1.is(booleanAsConst),
+    index_1.is(boolean),
+    index_1.is(boolean),
+    index_1.is(boolean),
 ];
 // number
-const number = 2;
-const numberAsConst = 2;
-const numbers = [
-    (/* number */ true),
-    (/* number */ true),
-    (/* number */ true),
-    (/* 2 */ true),
-    (/* 3 */ false),
-    (/* 2 */ false),
-    (/* 2 */ true),
-    (/* number */ typeof number === "number"),
+var number = 2;
+var numberAsConst = 2;
+var numbers = [
+    index_1.is(2),
+    index_1.is(number),
+    index_1.is(numberAsConst),
+    index_1.is(2),
+    index_1.is(2),
+    index_1.is(number),
+    index_1.is(numberAsConst),
+    index_1.is(number),
 ];
 // string
-const string = 'string';
-const stringAsConst = 'string';
-const strings = [
-    (/* string */ true),
-    (/* string */ true),
-    (/* string */ true),
-    (/* string */ true),
-    (/* "string" */ true),
-    (/* "other_string" */ false),
-    (/* "string" */ string === "string"),
-    (/* "string" */ true),
-    (/* string */ typeof string === "string"),
+var string = 'string';
+var stringAsConst = 'string';
+var strings = [
+    index_1.is("string"),
+    index_1.is(string),
+    index_1.is(stringAsConst),
+    index_1.is("" + string),
+    index_1.is("string"),
+    index_1.is("string"),
+    index_1.is(string),
+    index_1.is(stringAsConst),
+    index_1.is(string),
 ];
 // object
 // NOTE: object is anything that is not a primitve (including null)
-const object = {};
-const objects = [
-    (/* object */ true),
-    (/* object */ true),
-    (/* object */ true),
-    (/* object */ (typeof object === "object" && object !== null) || typeof object === "function"),
+var object = {};
+var objects = [
+    index_1.is(object),
+    index_1.is(object),
+    index_1.is(object),
+    index_1.is(object),
 ];
 // symbol
 // TODO: unique symbol
-const symbol = Symbol.for('symbol');
-const symbols = [
-    (/* symbol */ true),
+var symbol = Symbol["for"]('symbol');
+var symbols = [
+    index_1.is(symbol),
 ];
 // enum 
 var Enum;
@@ -93,75 +93,80 @@ var Enum;
     Enum[Enum["First"] = 0] = "First";
     Enum[Enum["Second"] = 1] = "Second";
 })(Enum || (Enum = {}));
-const enums = [
-    (/* Enum */ (typeof Enum === "string" || typeof Enum === "number") && Enum in Enum),
-    (/* Enum */ (typeof Enum.First === "string" || typeof Enum.First === "number") && Enum.First in Enum),
-    (/* Enum */ (typeof Enum.Second === "string" || typeof Enum.Second === "number") && Enum.Second in Enum),
-    (/* Enum.First */ false),
-    (/* Enum.Second */ false),
-    (/* Enum.First */ true),
-    (/* Enum.First */ false),
-    (/* Enum.Second */ false),
-    (/* Enum.Second */ true),
-    (/* Enum */ (typeof 0 /* First */ === "string" || typeof 0 /* First */ === "number") && 0 /* First */ in Enum),
-    (/* Enum */ (typeof 1 /* Second */ === "string" || typeof 1 /* Second */ === "number") && 1 /* Second */ in Enum),
-    (/* Enum.First */ true),
-    (/* Enum.Second */ true),
-    (/* ConstEnum.Second */ false),
-    (/* ConstEnum.Second */ true),
-    (/* ConstEnum */ (typeof Enum === "string" || typeof Enum === "number") && Enum in ConstEnum),
-    (/* ConstEnum */ (typeof Enum.First === "string" || typeof Enum.First === "number") && Enum.First in ConstEnum),
-    (/* ConstEnum */ (typeof Enum.Second === "string" || typeof Enum.Second === "number") && Enum.Second in ConstEnum),
-    (/* Enum.First */ true),
-    (/* Enum.Second */ true),
+var enums = [
+    index_1.is(Enum),
+    index_1.is(Enum.First),
+    index_1.is(Enum.Second),
+    index_1.is(Enum),
+    index_1.is(Enum),
+    index_1.is(Enum.First),
+    index_1.is(Enum.Second),
+    index_1.is(Enum.First),
+    index_1.is(Enum.Second),
+    index_1.is(0 /* First */),
+    index_1.is(1 /* Second */),
+    index_1.is(0 /* First */),
+    index_1.is(1 /* Second */),
+    index_1.is(Enum.First),
+    index_1.is(Enum.Second),
+    index_1.is(Enum),
+    index_1.is(Enum.First),
+    index_1.is(Enum.Second),
+    index_1.is(0 /* First */),
+    index_1.is(1 /* Second */),
 ];
 // array
-const array = [];
-const recursiveArray = [];
-const arrays = [
-    (/* any[] */ Array.isArray(array)),
-    (/* number[] */ Array.isArray(array) && array.every(item => typeof item === "number")),
-    (/* number[][] */ Array.isArray(array) && array.every(item => Array.isArray(item) && item.every(item => typeof item === "number"))),
-    (/* number[][] */ Array.isArray(recursiveArray) && recursiveArray.every(item => Array.isArray(item) && item.every(item => typeof item === "number"))),
-    (/* void[] */ Array.isArray(array) && array.every(item => item === void 0)),
+var array = [];
+var recursiveArray = [];
+var arrays = [
+    index_1.is(array),
+    index_1.is(array),
+    index_1.is(array),
+    index_1.is(recursiveArray),
+    index_1.is(array),
 ];
 // tuple
-const tuple = [1, 2];
-const tupleAsConst = [1, 2];
-const tuples = [
-    (/* [number, number] */ Array.isArray(tuple) && tuple.length === 2 && typeof tuple[0] === "number" && typeof tuple[1] === "number"),
-    (/* [1, 2] */ Array.isArray(tuple) && tuple.length === 2 && tuple[0] === 1 && tuple[1] === 2),
-    (/* [number, number] */ Array.isArray(tupleAsConst) && tupleAsConst.length === 2 && typeof tupleAsConst[0] === "number" && typeof tupleAsConst[1] === "number"),
-    (/* [1, 2] */ Array.isArray(tupleAsConst) && tupleAsConst.length === 2 && tupleAsConst[0] === 1 && tupleAsConst[1] === 2),
-    (/* [] */ Array.isArray(tuple) && tuple.length === 0),
-    (/* [string | number, [Enum.First, ConstEnum.Second]] */ Array.isArray([]) && [].length === 2 && (typeof [][0] === "string" || typeof [][0] === "number") && (Array.isArray([][1]) && [][1].length === 2 && [][1][0] === 0 && [][1][1] === 1)),
+var tuple = [1, 2];
+var tupleAsConst = [1, 2];
+var tuples = [
+    index_1.is(tuple),
+    index_1.is(tuple),
+    index_1.is(tupleAsConst),
+    index_1.is(tupleAsConst),
+    index_1.is(tuple),
+    index_1.is([]),
 ];
-const interfaces = [
-    (/* InterfaceA */ {} != null && typeof {}["A"] === "number"),
-    (/* InterfaceB */ {} != null && typeof {}["B"] === "string"),
-    (/* InterfaceA | InterfaceB */ {} != null && typeof {}["A"] === "number" || {} != null && typeof {}["B"] === "string"),
-    (/* InterfaceA & InterfaceB */ {} != null && typeof {}["A"] === "number" && ({} != null && typeof {}["B"] === "string")),
+var interfaces = [
+    index_1.is({}),
+    index_1.is({}),
+    index_1.is({}),
+    index_1.is({}),
 ];
 // class
-class A {
-}
-class B {
-}
-const classes = [
-    (/* A */ A instanceof A),
-    (/* typeof A */ A),
-    (/* B */ A instanceof B),
-    (/* typeof B */ A),
-    (/* A */ new A instanceof A),
-    (/* A */ (new A) instanceof A),
-    (/* A */ new B instanceof A),
+var A = /** @class */ (function () {
+    function A() {
+    }
+    return A;
+}());
+var B = /** @class */ (function () {
+    function B() {
+    }
+    return B;
+}());
+var classes = [
+    index_1.is(A),
+    index_1.is(A),
+    index_1.is(A),
+    index_1.is(A),
+    index_1.is(new A),
+    index_1.is((new A)),
+    index_1.is(new B),
 ];
 // unions
-const unions = [
-    (/* string | number */ typeof void 0 === "string" || typeof void 0 === "number"),
+var unions = [
+    index_1.is(void 0),
 ];
 // intersections
-const intersections = [
-    (/* number[] & string[] */ Array.isArray(void 0) && (void 0).every(item => typeof item === "number") && (Array.isArray(void 0) && (void 0).every(item => typeof item === "string"))),
+var intersections = [
+    index_1.is(void 0),
 ];
-//# sourceMappingURL=index.js.map

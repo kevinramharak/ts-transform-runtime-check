@@ -60,7 +60,10 @@
     /* Advanced Options */
     "sourceMap": true,
     "forceConsistentCasingInFileNames": true, /* Disallow inconsistently-cased references to the same file. */
-    "paths": {}
+    "paths": {},
+    "plugins": [
+      { "transform": "ts-transform-runtime-check" }
+    ]
   },
   "include": [
     "src/**/*.ts"
