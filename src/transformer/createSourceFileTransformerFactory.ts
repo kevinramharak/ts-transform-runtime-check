@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import { is } from 'ts-transform-runtime-check';
 
 import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '../config';
 import { createContextTransformer } from './createContextTransformer';
@@ -30,6 +31,10 @@ export function createSourceFileTransformerFactory(program: ts.Program, options?
 export function createSourceFileTransformerFactory(program: ts.Program, _options: Partial<IPackageOptions> = {}): ts.TransformerFactory<ts.SourceFile> {
     const options = Object.assign({}, DefaultPackageOptions, _options) as IPackageOptions;
     const checker = program.getTypeChecker();
+
+    if (!is<IPackageOptions>(options)) {
+        throw new TypeError('invalid configuration object');
+    }
 
     let packageSymbolTable: ts.SymbolTable | undefined;
 

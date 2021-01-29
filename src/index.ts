@@ -1,7 +1,4 @@
 
-// TODO: generate stub functions for each api we expose
-
-
 // TODO: missing features
 // - like<T>(value: any): typeof value quacks like T
 // - createTypeCheck<T>(): (value: any ) => is<T>(value);
@@ -11,3 +8,11 @@
 // - ignore @internal flagged properties
 // - use json-schema's (at compile time and at runtime?)
 // see https://github.com/vega/ts-json-schema-generator for example
+
+/**
+ * check if `value` conforms to the runtime type of `T`
+ */
+export function is<T>(value: unknown): value is T {
+    // TODO: better error message
+    throw new TypeError('this function');
+};

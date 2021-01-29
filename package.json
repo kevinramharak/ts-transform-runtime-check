@@ -1,6 +1,6 @@
 {
     "name": "ts-transform-runtime-check",
-    "version": "0.0.1-alpha17",
+    "version": "0.0.1-alpha18",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "readme": "readme.md",
@@ -38,8 +38,9 @@
         "mocha": "^8.2.1",
         "ts-expose-internals": "^4.1.3",
         "ts-node": "^9.1.1",
-        "ts-transform-runtime-check": "^0.0.1-alpha17",
+        "ts-transform-runtime-check": "^0.0.1-alpha18",
         "ts-transform-test-compiler": "^1.1.0",
+        "typescript": ">=4.1.3",
         "ttypescript": "1.5.12"
     }
 }

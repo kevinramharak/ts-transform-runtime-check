@@ -1,5 +1,4 @@
 declare module '@test/ts-transform-runtime-check' {
-
 /**
  * check if `value` conforms to the runtime type of `T`
  */

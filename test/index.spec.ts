@@ -16,7 +16,8 @@ const tsConfig = Object.assign({}, defaultTsConfig, {
 } as Partial<typeof defaultTsConfig>);
 
 before(() => {
-    writeFileSync('test/files/types.d.ts', `declare module '${PackageModuleName}' {\n${readFileSync('index.d.ts', { encoding: 'utf-8' })}\n}`);
+    const typeDefs = readFileSync('./lib/index.d.ts', { encoding: 'utf-8' }).replace(/ declare function /g, ' function ');
+    writeFileSync('test/files/types.d.ts', `declare module '${PackageModuleName}' {\n${typeDefs}\n}`);
 });
 
 describe('ts-transform-runtime-check', () => {

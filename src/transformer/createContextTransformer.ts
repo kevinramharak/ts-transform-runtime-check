@@ -11,7 +11,7 @@ import { MarkedVisitor, visitors } from '../visitors';
  * for this reason transformers are asked first if they are interested in a node
  * then the visitors are executed
  */
-function createNodeVisitor(visitors: MarkedVisitor[], transformers: [ShouldTransform, MarkedTransformer][], checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions) {
+export function createNodeVisitor(visitors: MarkedVisitor[], transformers: [ShouldTransform, MarkedTransformer][], checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions) {
     return function nodeVisitor(node: ts.Node): ts.Node | undefined {
         const [_, transformer] = transformers.find(([shouldTransform, transformer]) => transformer.kind === node.kind && shouldTransform(node, checker, context, options)) || [];
         if (transformer) {

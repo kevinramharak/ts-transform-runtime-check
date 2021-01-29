@@ -607,7 +607,7 @@ set-blocking@^2.0.0:
   resolved "https://registry.yarnpkg.com/set-blocking/-/set-blocking-2.0.0.tgz#045f9782d011ae9a6803ddd382b24392b3d890f7"
   integrity sha1-BF+XgtARrppoA93TgrJDkrPYkPc=
 
-source-map-support@^0.5.17, source-map-support@^0.5.6:
+source-map-support@^0.5.17:
   version "0.5.19"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.19.tgz#a98b62f86dcaf4f67399648c085291ab9e8fed61"
   integrity sha512-Wonm7zOCIJzBGQdB+thsPar0kYuCIzYvxZwlBa87yi/Mdjv7Tip2cyVbLj5o0cFPN4EVkuTwb3GDDyUx2DGnGw==
@@ -692,52 +692,10 @@ ts-node@^9.1.1:
     source-map-support "^0.5.17"
     yn "3.1.1"
 
-ts-transform-runtime-check@^0.0.1-alpha10:
-  version "0.0.1-alpha10"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha10.tgz#f5178597688ba6f17bb8576de19b30c9f912b5c0"
-  integrity sha512-+rWM39vWlvamf1IGhWshnAN0S5aKMy6ZqtNXoTJpEfQ9+Dgf5p2irqjIciCffVN1ECRhZDCyjrTqkUcDk6wQdA==
-  dependencies:
-    ts-transform-runtime-check "^0.0.1-alpha8"
-    typescript "^4.1.3"
-
-ts-transform-runtime-check@^0.0.1-alpha12:
-  version "0.0.1-alpha12"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha12.tgz#05d2313ef0d79787e13a80d77f7f979d098fb7ff"
-  integrity sha512-czbOfrRqNpW03R/8eAR5i9sXFlz6ZEGDFp3MSo3KM0JBuH9Txs1jKmVaENq5+BKoYLB1uqlkhfntW1PFzddE1A==
-  dependencies:
-    ts-transform-runtime-check "^0.0.1-alpha10"
-    typescript "^4.1.3"
-
-ts-transform-runtime-check@^0.0.1-alpha13:
-  version "0.0.1-alpha13"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha13.tgz#3eb3a7c0f3817384340cdecb901ee976db752bf7"
-  integrity sha512-b8EiXPveucQnbE23hQfYHmfuFDVwkkueR4znhnoMUMV8miTxGTdgz2Rq1rajhzKkNvcs0nn8SWvboC/+Q6Upxw==
-  dependencies:
-    ts-transform-runtime-check "^0.0.1-alpha12"
-    typescript "^4.1.3"
-
-ts-transform-runtime-check@^0.0.1-alpha14:
-  version "0.0.1-alpha14"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha14.tgz#1df0c51ece24f991ca6958f0a72f5143521941b2"
-  integrity sha512-y1kYFVtDJkJa18i4CztS+TX7u0JUDDOneNoFvkvqb9REqFunRZWrf5/IwdDtTpmJD0RiFJeHm+7ZIgru+lH20Q==
-  dependencies:
-    ts-transform-runtime-check "^0.0.1-alpha13"
-    typescript "^4.1.3"
-
-ts-transform-runtime-check@^0.0.1-alpha7:
-  version "0.0.1-alpha7"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha7.tgz#b79537b825abe37b44fd740ea824094d10b36a70"
-  integrity sha512-3srDkQraxjqCSyO5V8OOBqRWntYjuYw9iHkg+OysU+04AAMfV62XRK/dy6pet+8YXw1j+AEFvgBTmY95PUn5Yg==
-  dependencies:
-    typescript "^4.1.3"
-
-ts-transform-runtime-check@^0.0.1-alpha8:
-  version "0.0.1-alpha8"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha8.tgz#f57139605337432865f04931a8f4149d69aa1a77"
-  integrity sha512-ymEb0E++Q3Z3OJknkP8AEv6vOxEzHM2KrFEq1yoLeh/NENMYg5LnvTAcN/UIH5VIfRYlMvvV4zukZMYU8kql8w==
-  dependencies:
-    ts-transform-runtime-check "^0.0.1-alpha7"
-    typescript "^4.1.3"
+ts-transform-runtime-check@^0.0.1-alpha17:
+  version "0.0.1-alpha17"
+  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha17.tgz#78528e5a3957720e610e4df42f015c7bb5e8e83e"
+  integrity sha512-RHMkUhkiSARiFpcB3FFjLIIPeCRVYWYIc4V7LmimjdFqOxuCcuHoyYhSwPoe1oaLei/496Z9FKjNNn87wBxHdA==
 
 ts-transform-test-compiler@^1.1.0:
   version "1.1.0"
@@ -758,7 +716,7 @@ type-detect@^4.0.0, type-detect@^4.0.5:
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
 
-typescript@^4.1.3:
+typescript@>=4.1.3:
   version "4.1.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.3.tgz#519d582bd94cba0cf8934c7d8e8467e473f53bb7"
   integrity sha512-B3ZIOf1IKeH2ixgHhj6la6xdwR9QrLC5d1VKeCSY4tvkqhF2eqd9O7txNlS0PO3GrBAFIdr3L1ndNwteUbZLYg==
