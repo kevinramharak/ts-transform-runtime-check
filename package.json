@@ -1,8 +1,10 @@
 {
     "name": "ts-transform-runtime-check",
-    "version": "0.0.1-alpha16",
-    "main": "dist/index.js",
+    "version": "0.0.1-alpha17",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
     "readme": "readme.md",
+    "license": "MIT",
     "keywords": [
         "typescript",
         "typescript-transform",
@@ -10,7 +12,7 @@
         "ts-transformer",
         "ts-compiler-api",
         "runtime",
-        "type check"
+        "typecheck"
     ],
     "description": "Typescript AST transformer to generate type checks at compile time",
     "scripts": {
@@ -22,10 +24,11 @@
         "type": "git",
         "url": "https://https://github.com/kevinramharak/ts-transform-runtime-check.git"
     },
-    "types": "index.d.ts",
-    "license": "MIT",
-    "dependencies": {
-        "typescript": "^4.1.3"
+    "peerDependencies": {
+        "typescript": ">=4.1.3"
+    },
+    "ts-node": {
+        "compiler": "ttypescript"
     },
     "devDependencies": {
         "@types/chai": "^4.2.14",
@@ -33,10 +36,9 @@
         "@types/node": "^14.14.22",
         "chai": "^4.2.0",
         "mocha": "^8.2.1",
-        "source-map-support": "^0.5.6",
         "ts-expose-internals": "^4.1.3",
         "ts-node": "^9.1.1",
-        "ts-transform-runtime-check": "^0.0.1-alpha15",
+        "ts-transform-runtime-check": "^0.0.1-alpha17",
         "ts-transform-test-compiler": "^1.1.0",
         "ttypescript": "1.5.12"
     }
