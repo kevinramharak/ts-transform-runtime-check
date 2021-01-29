@@ -1,4 +1,6 @@
-import { is } from 'ts-transform-runtime-check';
+/// <reference path="./types.d.ts" />
+
+import { is } from '@test/ts-transform-runtime-check';
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types#data_types
 // https://www.typescriptlang.org/docs/handbook/basic-types.html

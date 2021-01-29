@@ -2,9 +2,11 @@
 import {} from 'ts-expose-internals';
 
 import ts from 'typescript';
+import { createArrowFunction, createIsArrayCheck, createTypeOfCheck, isEnumType } from '../ast';
 import { branch } from '../branch';
-import { ITransformerOptions } from '../transformer';
-import { isEnumType } from './isEnumType';
+import { IPackageOptions } from '../config';
+import { TypeOfResult } from '../semantics';
+import { CreateShouldTransform } from './types';
 
 const ERROR = {
     InvalidAmountOfTypeArguments: `invalid amount of type arguments, expected exactly 1`,
@@ -12,47 +14,6 @@ const ERROR = {
     InvalidTypeArgument: (name: string) => `invalid type argument '${name}'`,
     ImpossibleBranchReached: (reason: string) => `reached a branch that should be impossible to reach because of: '${reason}'`,
 };
-
-const TypeOfValue = {
-    BOOLEAN: 'boolean',
-    NUMBER: 'number',
-    BIGINT: 'bigint',
-    STRING: 'string',
-    SYMBOL: 'symbol',
-    UNDEFINED: 'undefined',
-    FUNCTION: 'function',
-    OBJECT: 'object',
-} as const;
-
-function createTypeOfCheck(context: ts.TransformationContext, value: ts.Expression, type: typeof TypeOfValue[keyof typeof TypeOfValue]) {
-    return context.factory.createStrictEquality(
-        context.factory.createTypeOfExpression(value),
-        context.factory.createStringLiteral(type),
-    );
-}
-
-function createIsArrayCheck(context: ts.TransformationContext, node: ts.Expression) {
-    return context.factory.createMethodCall(
-        context.factory.createIdentifier('Array'),
-        'isArray',
-        [node]
-    );
-}
-
-function createArrowFunction(context: ts.TransformationContext, parameters: (string | ts.Identifier | ts.ParameterDeclaration)[], body: ts.ConciseBody) {
-    return context.factory.createArrowFunction(
-        void 0, void 0,
-        parameters.map(parameter => {
-            if (typeof parameter === 'string' || parameter.kind === ts.SyntaxKind.Identifier) {
-                return context.factory.createParameterDeclaration(void 0, void 0, void 0, parameter);
-            }
-            return parameter;
-        }),
-        void 0,
-        void 0,
-        body,
-    );
-}
 
 function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.TransformationContext) {
     const compilerOptions = context.getCompilerOptions();
@@ -118,9 +79,9 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        const typeof_object = createTypeOfCheck(context, value.node, TypeOfValue.OBJECT);
+                        const typeof_object = createTypeOfCheck(context, value.node, TypeOfResult.object);
                         const strict_equality_null = context.factory.createStrictInequality(value.node, context.factory.createNull());
-                        const typeof_function = createTypeOfCheck(context, value.node, TypeOfValue.FUNCTION);
+                        const typeof_function = createTypeOfCheck(context, value.node, TypeOfResult.function);
 
                         return context.factory.createLogicalOr(
                             context.factory.createParenthesizedExpression(
@@ -140,7 +101,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     default() {
-                        return createTypeOfCheck(context, value.node, TypeOfValue.BOOLEAN);
+                        return createTypeOfCheck(context, value.node, TypeOfResult.boolean);
                     },
                 });
             },
@@ -176,7 +137,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        return createTypeOfCheck(context, value.node, TypeOfValue.SYMBOL);
+                        return createTypeOfCheck(context, value.node, TypeOfResult.symbol);
                     },
                     default() {
                         return context.factory.createFalse();
@@ -197,7 +158,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        return createTypeOfCheck(context, value.node, TypeOfValue.STRING);
+                        return createTypeOfCheck(context, value.node, TypeOfResult.string);
                     },
                     default() {
                         return context.factory.createFalse();
@@ -229,7 +190,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        return createTypeOfCheck(context, value.node, TypeOfValue.NUMBER);
+                        return createTypeOfCheck(context, value.node, TypeOfResult.number);
                     },
                     default() {
                         return context.factory.createFalse();
@@ -257,7 +218,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        return createTypeOfCheck(context, value.node, TypeOfValue.BIGINT);
+                        return createTypeOfCheck(context, value.node, TypeOfResult.bigint);
                     },
                     default() {
                         return context.factory.createFalse();
@@ -286,8 +247,8 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                 // see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in#inherited_properties
                 if (isEnumType(is.type)) {
                     // Check if the value we are checking is a string | number
-                    const is_string = createTypeOfCheck(context, value.node, TypeOfValue.STRING);
-                    const is_number = createTypeOfCheck(context, value.node, TypeOfValue.NUMBER);
+                    const is_string = createTypeOfCheck(context, value.node, TypeOfResult.string);
+                    const is_number = createTypeOfCheck(context, value.node, TypeOfResult.number);
                     const is_index_type = context.factory.createParenthesizedExpression(
                         context.factory.createLogicalOr(is_string, is_number)
                     );
@@ -411,51 +372,46 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
     }
 }
 
-// TODO: missing features
-// - like<T>(value: any): typeof value quacks like T
-// - createTypeCheck<T>(): (value: any ) => is<T>(value);
-// - extends<A>(B: any): B extends A
-// - ?<A>(value: B): A extends B
-// - cache interface checks into an object? Share the cache with createTypeCheck
-// - ignore @internal flagged properties
-// - use json-schema's (at compile time and at runtime?)
-// see https://github.com/vega/ts-json-schema-generator for example
+is.kind = ts.SyntaxKind.CallExpression;
+
+is.createShouldTransform = function createShouldTransform(declaration: ts.Declaration) {
+    return function shouldTransform(node, checker, context, options) {
+        const signature = checker.getResolvedSignature(node);
+        return signature && signature.declaration && signature.declaration=== declaration;
+    }
+} as CreateShouldTransform<ts.CallExpression>;
 
 /**
  * 
  */
-export function is(options: ITransformerOptions) {
-    function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts.TransformationContext): ts.Expression {
-        if (!node.typeArguments || node.typeArguments.length !== 1) {
-            throw new Error(ERROR.InvalidAmountOfTypeArguments);
-        }
-
-        if (node.arguments.length !== 1) {
-            throw new Error(ERROR.InvalidAmountOfArguments);
-        }
-
-        const typeCheckGenerator = createTypeCheckGenerator(checker, context);
-
-        // is<{is}>({value.nde}: {value.type})
-        const isNode = node.typeArguments[0];
-        const isType = checker.getTypeFromTypeNode(isNode);
-        const valueNode = node.arguments[0];
-        const valueType = checker.getTypeAtLocation(valueNode);
-
-        let check = typeCheckGenerator({ type: isType }, { node: valueNode, type: valueType });
-
-        if (options.addTypeComment) {
-            ts.addSyntheticLeadingComment(check, ts.SyntaxKind.MultiLineCommentTrivia, ` ${checker.typeToString(isType)} `);
-        }
-
-        if (options.addParenthesis) {
-            check = context.factory.createParenthesizedExpression(
-                check,
-            );
-        }
-
-        return check;
+export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions): ts.Expression {
+    if (!node.typeArguments || node.typeArguments.length !== 1) {
+        throw new Error(ERROR.InvalidAmountOfTypeArguments);
     }
 
-    return is;
+    if (node.arguments.length !== 1) {
+        throw new Error(ERROR.InvalidAmountOfArguments);
+    }
+
+    const typeCheckGenerator = createTypeCheckGenerator(checker, context);
+
+    // is<{is}>({value.nde}: {value.type})
+    const isNode = node.typeArguments[0];
+    const isType = checker.getTypeFromTypeNode(isNode);
+    const valueNode = node.arguments[0];
+    const valueType = checker.getTypeAtLocation(valueNode);
+
+    let check = typeCheckGenerator({ type: isType }, { node: valueNode, type: valueType });
+
+    if (options.addTypeComment) {
+        ts.addSyntheticLeadingComment(check, ts.SyntaxKind.MultiLineCommentTrivia, ` ${checker.typeToString(isType)} `);
+    }
+
+    if (options.addParenthesis) {
+        check = context.factory.createParenthesizedExpression(
+            check,
+        );
+    }
+
+    return check;
 }

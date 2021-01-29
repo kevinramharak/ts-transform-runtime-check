@@ -1,17 +1,13 @@
 
+// TODO: generate stub functions for each api we expose
 
-import { transformers } from './transformers';
-import { createSourceFileTransformerFactory as transformer } from './transformer';
 
-// generate stub functions in case the package gets imported without running the transform
-// const stubs = Object.keys(transformers).reduce((record, name) => {
-//     record[name as keyof typeof transformers] = () => {
-//         throw new TypeError(`ts-transform-runtime-check :: you are using the stub function of ${name}. did you forget to configure the transform plugin?`);
-//     };
-//     return record;
-// }, {} as Record<keyof typeof transformers, (...args: any[]) => never>);
-
-// TODO: figure out a way to export the stubs without breaking stuff
-//exports = stubs;
-
-export default transformer;
+// TODO: missing features
+// - like<T>(value: any): typeof value quacks like T
+// - createTypeCheck<T>(): (value: any ) => is<T>(value);
+// - extends<A>(B: any): B extends A
+// - ?<A>(value: B): A extends B
+// - cache interface checks into an object? Share the cache with createTypeCheck
+// - ignore @internal flagged properties
+// - use json-schema's (at compile time and at runtime?)
+// see https://github.com/vega/ts-json-schema-generator for example
