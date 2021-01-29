@@ -2,3 +2,4 @@ src
 tmp
 test
 .mocharc.json
+tsconfig.json

@@ -692,10 +692,10 @@ ts-node@^9.1.1:
     source-map-support "^0.5.17"
     yn "3.1.1"
 
-ts-transform-runtime-check@^0.0.1-alpha18:
-  version "0.0.1-alpha18"
-  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha18.tgz#12579406ecb2f589e0ec6844070c5d8b2029d842"
-  integrity sha512-3yjU8/bR3abFeqXsKL15ApjAEs6V3ppiSbUAawQnHOPz3B6VhNtZ93WwB2oBgQRu2Xu7BXpwYkEw6Wu9VFd8HA==
+ts-transform-runtime-check@^0.0.1-alpha19:
+  version "0.0.1-alpha19"
+  resolved "https://registry.yarnpkg.com/ts-transform-runtime-check/-/ts-transform-runtime-check-0.0.1-alpha19.tgz#f2e46496389676df5835788ca8d7c08e018a2098"
+  integrity sha512-HmN80bO8nCfwSgg2oEPUC2gPCQ+OGpLvy55KY09Pvie7zGJQ/IAzUe2uc6dyd0uPkUXlImKoVygQ/mB3qr3gVw==
 
 ts-transform-test-compiler@^1.1.0:
   version "1.1.0"
