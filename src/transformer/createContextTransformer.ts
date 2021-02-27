@@ -3,7 +3,6 @@ import { IPackageOptions, IPublicPackageOptions } from '../config';
 import { MarkedTransformer, ShouldTransform } from '../transformers';
 import { MarkedVisitor, visitors } from '../visitors';
 
-// TODO: support multipe visitors / transformers for the same note type
 // TODO: is recursion needed/possible?
 /**
  * The difference between a visitor and a transformer is that a visitor will always visit its kind and return.

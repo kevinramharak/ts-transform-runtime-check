@@ -2,9 +2,10 @@ import ts from 'typescript';
 import { is } from 'ts-transform-runtime-check';
 
 import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '../config';
+import { MarkedTransformer, ShouldTransform, transformers } from '../transformers';
+import { warn } from '../log';
 import { createContextTransformer } from './createContextTransformer';
 import { noopContextTransformer } from './noop';
-import { MarkedTransformer, ShouldTransform, transformers } from '../transformers';
 
 function findSourceFileForModuleSpecifier(program: ts.Program, moduleSpecifier: string) {
     // NOTE: this took a long time to figure out, not sure why there isn't a simpler api for this
@@ -36,7 +37,8 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
         throw new TypeError('invalid configuration object');
     }
 
-    let packageSymbolTable: ts.SymbolTable | undefined;
+
+    let packageSymbolTable: ts.SymbolTable;
 
     // first try and find the package as if it has a normal definition `import { } from 'PACKAGE_MODULE_SPECIFIER'`
     const packageSourceFile = findSourceFileForModuleSpecifier(program, options.PackageModuleName);
@@ -46,7 +48,7 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
             packageSymbolTable = packageSourceFile.symbol.exports;
         } else {
             // we found the source file, but it has no exports
-            // TODO: log
+            warn(`'${options.PackageModuleName}' package was found but has no exports, defaulting to a noop transformer`);
             return noopContextTransformer;
         }
     } else {
@@ -56,14 +58,11 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
         const moduleSymbol = ambientModules.find(module => module.name === `"${options.PackageModuleName}"`);
         if (moduleSymbol && moduleSymbol.exports) {
             packageSymbolTable = moduleSymbol.exports;
+        } else {
+            // we found the ambient declaration file, but it has no exports
+            warn(`'${options.PackageModuleName}' ambient declaration was found but has no exports, defaulting to a noop transformer`);
+            return noopContextTransformer;
         }
-    }
-
-    if (!packageSymbolTable) {
-        // could not find the source file nor the ambient module declaration
-        // TODO: log
-        console.warn('no package symbol table found')
-        return noopContextTransformer;
     }
 
     const transformerEntries = [...packageSymbolTable as Map<ts.__String, ts.Symbol>].map(([name, symbol]) => {

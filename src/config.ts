@@ -18,12 +18,10 @@ export interface IPublicPackageOptions {
      */
     addParenthesis: boolean;
     /**
-     * TODO: implement
      * logs a warning if a package function is being used incorrectly
      */
     warnOnInvalidUse: boolean;
     /**
-     * TODO: implement
      * throws an error if a package function is being used incorrectly
      */
     throwOnInvalidUse: boolean;
@@ -46,7 +44,7 @@ const InternalPackageOptions: IInternalPackageOptions = {
 const PackageOptions: IPublicPackageOptions = {
     addTypeComment: true,
     warnOnInvalidUse: true,
-    throwOnInvalidUse: false,
+    throwOnInvalidUse: true,
     addParenthesis: true,
 }
 

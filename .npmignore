@@ -1,5 +1,5 @@
-src
-tmp
-test
+src/
+build/
+test/
 .mocharc.json
 tsconfig.json

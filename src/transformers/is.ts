@@ -18,9 +18,9 @@ const ERROR = {
 function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.TransformationContext) {
     const compilerOptions = context.getCompilerOptions();
     // useful: https://github.com/microsoft/TypeScript/blob/master/src/compiler/types.ts#L4936
-    // NOTE: it is (almost) guarenteed that integer indexes are sorted from 0 - n, so any TypeFlags with multiple flags will branch to the lowest bit set
+    // NOTE: it is (almost) guarenteed that integer indexes are sorted from 0 - n, so any TypeFlags with multiple flags can be impacted by this
     // NOTE: TypeFlags.EnumLiteral is always a & with StringLiteral | NumberLiteral
-    // NOTE: TypeFlags.Enum is not actually used, Enums seems to be represented as unions
+    // NOTE: TypeFlags.Enum is not actually used, Enum's seem to be represented as unions
     /**
      * generates the code for `is<{ is.type }>({ node.value }: { node.type })` CallExpressions
      */
@@ -71,7 +71,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                     }
                 });
             },
-            // note: NonPrimitive is the plain `object` type
+            // NOTE: NonPrimitive is the plain `object` type
             // see: https://www.typescriptlang.org/docs/handbook/basic-types.html#object
             [ts.TypeFlags.NonPrimitive]() {
                 return branch(value.type.flags, {
@@ -374,10 +374,13 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
 
 is.kind = ts.SyntaxKind.CallExpression;
 
+/**
+ * @param declaration the `is<T>(value: unknown): value is T` declaration
+ */
 is.createShouldTransform = function createShouldTransform(declaration: ts.Declaration) {
     return function shouldTransform(node, checker, context, options) {
         const signature = checker.getResolvedSignature(node);
-        return signature && signature.declaration && signature.declaration=== declaration;
+        return signature && signature.declaration && signature.declaration === declaration;
     }
 } as CreateShouldTransform<ts.CallExpression>;
 

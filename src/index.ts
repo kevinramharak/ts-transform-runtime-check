@@ -1,6 +1,5 @@
 
 // TODO: missing features
-// - like<T>(value: any): typeof value quacks like T
 // - createTypeCheck<T>(): (value: any ) => is<T>(value);
 // - extends<A>(B: any): B extends A
 // - ?<A>(value: B): A extends B
@@ -9,10 +8,16 @@
 // - use json-schema's (at compile time and at runtime?)
 // see https://github.com/vega/ts-json-schema-generator for example
 
+class StubError extends Error {
+    public name = 'StubError'
+    constructor(fnName: string) {
+        super(`'${fnName}' is a stub function, calls to this function should have been removed by the transformer plugin`);
+    }
+}
+
 /**
  * check if `value` conforms to the runtime type of `T`
  */
 export function is<T>(value: unknown): value is T {
-    // TODO: better error message
-    throw new TypeError('this function');
+    throw new StubError('is');
 };

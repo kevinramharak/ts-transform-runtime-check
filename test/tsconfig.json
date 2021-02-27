@@ -1,0 +1,12 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "sourceMap": false,
+        "declaration": false,
+        "outDir": "test"
+    },
+    "include": [
+        "**/*"
+    ]
+}
