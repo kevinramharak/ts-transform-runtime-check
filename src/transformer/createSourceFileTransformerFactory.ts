@@ -3,7 +3,7 @@ import { is } from 'ts-transform-runtime-check';
 
 import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '../config';
 import { MarkedTransformer, ShouldTransform, transformers } from '../transformers';
-import { warn } from '../log';
+import { useLogger, warn, Logger } from '../log';
 import { createContextTransformer } from './createContextTransformer';
 import { noopContextTransformer } from './noop';
 
@@ -25,6 +25,36 @@ function findSourceFileForModuleSpecifier(program: ts.Program, moduleSpecifier: 
 }
 
 /**
+ * Wraps the logger to remove annoying reference properties on `Node` and `Type` values
+ */
+function createDebugLogger(logger: Logger) {
+    const methods = [
+        'debug',
+        'error',
+        'info',
+        'log',
+        'warn',
+    ] as const;
+
+    let _logger: Logger = {} as Logger;
+    methods.forEach(name => {
+        const fn = logger[name];
+        _logger[name] = (...input: unknown[]) => {
+            fn.apply(logger, input.map(value => {
+                if (value != null && (value as any).checker) {
+                    delete (value as any).checker;
+                }
+                return value;
+            }));
+        };
+    });
+    _logger['assert'] = (condition, ...input) => {
+        logger.assert(condition, input);
+    };
+    return _logger;
+}
+
+/**
  * implements a `(program: ts.Program, options: any) => ts.TransformerFactory<ts.SourceFile>` signature expected by ttypescript
  * see: https://github.com/cevek/ttypescript#program
  */
@@ -32,6 +62,10 @@ export function createSourceFileTransformerFactory(program: ts.Program, options?
 export function createSourceFileTransformerFactory(program: ts.Program, _options: Partial<IPackageOptions> = {}): ts.TransformerFactory<ts.SourceFile> {
     const options = Object.assign({}, DefaultPackageOptions, _options) as IPackageOptions;
     const checker = program.getTypeChecker();
+
+    if (options.debug) {
+        useLogger(createDebugLogger(console));
+    }
 
     if (!is<IPackageOptions>(options)) {
         throw new TypeError('invalid configuration object');

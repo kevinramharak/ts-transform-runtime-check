@@ -1,5 +1,5 @@
 
-interface Logger {
+export interface Logger {
     debug(...input: unknown[]): void;
     log(...input: unknown[]): void;
     info(...input: unknown[]): void;
@@ -10,6 +10,8 @@ interface Logger {
 
 function noop(...input: unknown[]) {}
 
+export class AssertionError extends Error {}
+
 const noopLogger: Logger = {
     debug: noop,
     log: noop,
@@ -18,7 +20,7 @@ const noopLogger: Logger = {
     error: noop,
     assert(condition, ...input) {
         if (!condition) {
-            throw new Error('assertion error: ' + input.join(', '));
+            throw new AssertionError('assertion error: ' + input.join(', '));
         }
     }
 };
@@ -27,6 +29,10 @@ let _logger: Logger = noopLogger;
 
 export function useLogger(logger: Logger) {
     _logger = logger;
+}
+
+export function log(...input: unknown[]) {
+    _logger.log(...input);
 }
 
 export function debug(...input: unknown[]) {
@@ -43,4 +49,11 @@ export function warn(...input: unknown[]) {
 
 export function error(...input: unknown[]) {
     _logger.error(...input);
+}
+
+export function assert(condition: boolean, ...input: unknown[]): asserts condition {
+    _logger.assert(condition, ...input);
+    if (!condition) {
+        throw new AssertionError();
+    }
 }

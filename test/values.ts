@@ -1,8 +1,6 @@
 
-// define some reusable values
+// The point of this file is to define values that can be reused to ensure all tests use equal values
 
-// null
-// undefined
 export const symbol: symbol = Symbol.for('symbol');
 export const unique: unique symbol = Symbol.for('unique symbol');
 export const boolean: boolean = true;

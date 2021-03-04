@@ -7,6 +7,7 @@ import { branch } from '../branch';
 import { IPackageOptions } from '../config';
 import { TypeOfResult } from '../semantics';
 import { CreateShouldTransform } from './types';
+import { assert, log } from '../log';
 
 const ERROR = {
     InvalidAmountOfTypeArguments: `invalid amount of type arguments, expected exactly 1`,
@@ -308,22 +309,8 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                     });
                 } else {
                     return branch((is.type as ts.ObjectType).objectFlags, {
-                        // see: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/isPrototypeOf
-                        [ts.ObjectFlags.Class]() {
-                            return branch(value.type.flags, {
-                                [ts.TypeFlags.Primitive]() {
-                                    return context.factory.createFalse();
-                                },
-                                default() {
-                                    return context.factory.createBinaryExpression(
-                                        value.node,
-                                        ts.SyntaxKind.InstanceOfKeyword,
-                                        context.factory.createIdentifier(is.type.symbol.name),
-                                    );
-                                }
-                            });
-                        },
-                        [ts.ObjectFlags.Interface]() {
+                        // TODO: config.flag to enable/disable using class types as interfaces
+                        [ts.ObjectFlags.Class | ts.ObjectFlags.Interface]() {
                             return branch(value.type.flags, {
                                 [ts.TypeFlags.Primitive]() {
                                     return context.factory.createFalse();
@@ -335,12 +322,13 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                                     }
 
                                     const checks =  Array.from(members as Map<ts.__String, ts.Symbol>).filter(([name, symbol]) => {
-                                        return true;
+                                        const type = checker.getDeclaredTypeOfSymbol(symbol);
+                                        return type.getCallSignatures().length === 0;
                                     }).map(([name, symbol]) => {
                                         const type = checker.getTypeAtLocation(symbol.valueDeclaration);
                                         const node = context.factory.createElementAccessExpression(value.node, context.factory.createStringLiteral(name as string));
                                         const any = checker.getAnyType();
-                                        return generateTypeCheckExpression({ type  }, { node, type: any });
+                                        return generateTypeCheckExpression({ type }, { node, type: any });
                                     });
                                     
                                     // property access requires a undefined | null check to prevent throwing a type error
@@ -359,13 +347,25 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                                 }
                             });
                         },
+                        [ts.ObjectFlags.Reference]() {
+                            
+                            return value.node;
+                        },
                         default() {
                             return value.node;
                         }
                     });
                 }
             },
+            [ts.TypeFlags.TypeParameter]() {
+                const baseConstraintType = checker.getBaseConstraintOfType(is.type);
+                assert(baseConstraintType != null, 'asserts baseTypes != null');
+                // TODO: figure out how to use `<T extends BaseType = DefaultType>`
+                const any = checker.getAnyType();
+                return generateTypeCheckExpression({ type: baseConstraintType }, { node: value.node, type: any });
+            },
             default() {
+                log(checker.typeToString(is.type));
                 return value.node;
             },
         });
@@ -401,6 +401,7 @@ export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts
     // is<{is}>({value.nde}: {value.type})
     const isNode = node.typeArguments[0];
     const isType = checker.getTypeFromTypeNode(isNode);
+
     const valueNode = node.arguments[0];
     const valueType = checker.getTypeAtLocation(valueNode);
 

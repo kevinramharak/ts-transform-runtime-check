@@ -80,7 +80,7 @@ output: {
                 return code;
             }
             throw new Error(`
-failed to extract contents from compield string.
+failed to extract contents from compiled string.
 
 input:
 ------------

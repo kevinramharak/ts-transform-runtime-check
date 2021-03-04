@@ -32,10 +32,12 @@ export interface IPublicPackageOptions {
  */
 export interface IInternalPackageOptions {
     PackageModuleName: string;
+    debug: boolean;
 }
 
 const InternalPackageOptions: IInternalPackageOptions = {
     PackageModuleName: PACKAGE_MODULE_SPECIFIER,
+    debug: false,
 }
 
 /**

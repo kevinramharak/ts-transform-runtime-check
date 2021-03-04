@@ -9,7 +9,6 @@
 // see https://github.com/vega/ts-json-schema-generator for example
 
 class StubError extends Error {
-    public name = 'StubError'
     constructor(fnName: string) {
         super(`'${fnName}' is a stub function, calls to this function should have been removed by the transformer plugin`);
     }
