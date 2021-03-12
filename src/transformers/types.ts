@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { IPackageOptions } from '../config';
+import { IPackageOptions } from '@/config';
 
 export type ShouldTransform<TNode extends ts.Node = ts.Node> = (
     node: TNode,

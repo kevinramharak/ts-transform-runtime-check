@@ -1,23 +1,19 @@
 
-import { is } from '@test/ts-transform-runtime-check';
+import { is } from '@transformer';
 import { expect } from 'chai';
-import { bigint, boolean, cls, fn, number, string, symbol, unique } from '../values';
+import { bigint, boolean, cls, fn, number, string, symbol, unique } from '@test/values';
 
-interface Has<T> {
-    property: T;
+type Has<P extends PropertyKey, K> = {
+    [key in P]: K;
 }
 
 const isTrue: boolean[] = [
-    is<Has<boolean>>({ property: boolean }),
-    is<Has<number>>({ property: number }),
-    is<Has<bigint>>({ property: bigint }),
+    is<Has<'property', boolean>>({ property: boolean }),
 ];
 
 const isFalse: boolean[] = [
-    is<Has<boolean>>({ property: number }),
-    is<Has<number>>({ property: bigint }),
+    is<Has<'property', boolean>>({ property: number }),
 ];
-
 
 export function test() {
     isTrue.forEach(entry => expect(entry).to.be.true);

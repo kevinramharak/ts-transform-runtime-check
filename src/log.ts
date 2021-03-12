@@ -8,6 +8,7 @@ export interface Logger {
     assert(condition: boolean, ...input: unknown[]): asserts condition;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 function noop(...input: unknown[]) {}
 
 export class AssertionError extends Error {}

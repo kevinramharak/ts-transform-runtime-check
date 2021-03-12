@@ -2,12 +2,12 @@
 import {} from 'ts-expose-internals';
 
 import ts from 'typescript';
-import { createArrowFunction, createIsArrayCheck, createTypeOfCheck, isEnumType } from '../ast';
-import { branch } from '../branch';
-import { IPackageOptions } from '../config';
-import { TypeOfResult } from '../semantics';
+import { createArrowFunction, createIsArrayCheck, createTypeOfCheck, isEnumType } from '@/ast';
+import { branch } from '@/branch';
+import { IPackageOptions } from '@/config';
+import { TypeOfResult } from '@/semantics';
 import { CreateShouldTransform } from './types';
-import { assert, log } from '../log';
+import { assert, log, warn } from '@/log';
 
 const ERROR = {
     InvalidAmountOfTypeArguments: `invalid amount of type arguments, expected exactly 1`,
@@ -16,7 +16,11 @@ const ERROR = {
     ImpossibleBranchReached: (reason: string) => `reached a branch that should be impossible to reach because of: '${reason}'`,
 };
 
-function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.TransformationContext) {
+class NotImplemented extends Error {
+    name = 'NotImplemented';
+}
+
+export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.TransformationContext) {
     const compilerOptions = context.getCompilerOptions();
     // useful: https://github.com/microsoft/TypeScript/blob/master/src/compiler/types.ts#L4936
     // NOTE: it is (almost) guarenteed that integer indexes are sorted from 0 - n, so any TypeFlags with multiple flags can be impacted by this
@@ -73,6 +77,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                 });
             },
             // NOTE: NonPrimitive is the plain `object` type
+            // TODO: figure out if this messes with other types
             // see: https://www.typescriptlang.org/docs/handbook/basic-types.html#object
             [ts.TypeFlags.NonPrimitive]() {
                 return branch(value.type.flags, {
@@ -116,15 +121,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                         return isEqual ? context.factory.createTrue() : context.factory.createFalse();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                        const rhs = (() => {
-                            // see: https://github.com/microsoft/TypeScript/issues/42153
-                            const typeAsString = checker.typeToString(is.type);
-                            switch (typeAsString) {
-                                case 'true': return context.factory.createTrue();
-                                case 'false': return context.factory.createFalse();
-                                default: throw new Error(ERROR.ImpossibleBranchReached('expected true or false, instead got ' + typeAsString))
-                            }
-                        })();
+                        const rhs = checker.getTrueType() === is.type ? context.factory.createTrue() : context.factory.createFalse();
                         return context.factory.createStrictEquality(value.node, rhs);
                     },
                     default() {
@@ -229,7 +226,9 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
             [ts.TypeFlags.BigIntLiteral]() {
                 return branch(value.type.flags, {
                     [ts.TypeFlags.BigIntLiteral]() {
-                        const isEqual = (is.type as ts.BigIntLiteralType).value === (value.type as ts.BigIntLiteralType).value;
+                        const isEqual = 
+                        (is.type as ts.BigIntLiteralType).value.negative === (value.type as ts.BigIntLiteralType).value.negative &&
+                        (is.type as ts.BigIntLiteralType).value.base10Value === (value.type as ts.BigIntLiteralType).value.base10Value;
                         return isEqual ? context.factory.createTrue() : context.factory.createFalse();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
@@ -275,6 +274,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
             [ts.TypeFlags.Object]() {
                 // TODO: add compile time evaluation
                 if (checker.isTupleType(is.type)) {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const types = (is.type as ts.GenericType).typeArguments!;
                     const is_array = createIsArrayCheck(context, value.node);
                     const has_n_length = context.factory.createStrictEquality(
@@ -293,6 +293,7 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                     ));
                 } else if (checker.isArrayType(is.type)) {
                     const is_array = createIsArrayCheck(context, value.node);
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const type = (is.type as ts.GenericType).typeArguments![0];
                     return branch(type.flags, {
                         [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
@@ -302,36 +303,42 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                             const identifier = context.factory.createIdentifier('item');
                             const any = checker.getAnyType();
                             const check = generateTypeCheckExpression({ type }, { node: identifier, type: any });
-                            const predicate = createArrowFunction(context, [identifier], check);
+                            const predicate = createArrowFunction(context, void 0, [identifier], check);
                             const rhs = context.factory.createMethodCall(value.node, 'every', [predicate]);
                             return context.factory.createLogicalAnd(is_array, rhs);
                         }
                     });
                 } else {
                     return branch((is.type as ts.ObjectType).objectFlags, {
-                        // TODO: config.flag to enable/disable using class types as interfaces
-                        [ts.ObjectFlags.Class | ts.ObjectFlags.Interface]() {
+                        [ts.ObjectFlags.Class]() {
+                            // TODO: config.flag to enable/disable using class types as interfaces
+                            // eslint-disable-next-line no-constant-condition
+                            if (true) {
+                                return this[ts.ObjectFlags.Interface]();
+                            }
+                        },
+                        // TODO: write tests for each of these flags
+                        [ts.ObjectFlags.Interface | ts.ObjectFlags.Anonymous | ts.ObjectFlags.Reference | ts.ObjectFlags.Instantiated]() {
                             return branch(value.type.flags, {
                                 [ts.TypeFlags.Primitive]() {
                                     return context.factory.createFalse();
                                 },
                                 default() {
-                                    const members = (is.type as ts.InterfaceType).symbol.members;
-                                    if (!members) {
-                                        return context.factory.createTrue();
-                                    }
-
-                                    const checks =  Array.from(members as Map<ts.__String, ts.Symbol>).filter(([name, symbol]) => {
-                                        const type = checker.getDeclaredTypeOfSymbol(symbol);
-                                        return type.getCallSignatures().length === 0;
-                                    }).map(([name, symbol]) => {
-                                        const type = checker.getTypeAtLocation(symbol.valueDeclaration);
-                                        const node = context.factory.createElementAccessExpression(value.node, context.factory.createStringLiteral(name as string));
+                                    const properties = checker.getPropertiesOfType(is.type);
+                                    const checks =  properties.map((symbol) => {
+                                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                                        const type = checker.getTypeOfPropertyOfType(is.type, symbol.name)!;
+                                        const node = context.factory.createElementAccessExpression(value.node, context.factory.createStringLiteral(symbol.name));
                                         const any = checker.getAnyType();
+                                        if ((type.flags & ts.TypeFlags.AnyOrUnknown) > 0) {
+                                            log(type)
+                                            warn(`${symbol.name} has type 'any | unknown'`);
+                                        }
                                         return generateTypeCheckExpression({ type }, { node, type: any });
                                     });
                                     
                                     // property access requires a undefined | null check to prevent throwing a type error
+                                    // we only generate this check if we cannot infer if the type is not null or undefined
                                     // see: https://tc39.es/ecma262/#sec-requireobjectcoercible
                                     if ((value.type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) {
                                         const allows_property_access = context.factory.createInequality(value.node, context.factory.createNull());
@@ -347,26 +354,24 @@ function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Transform
                                 }
                             });
                         },
-                        [ts.ObjectFlags.Reference]() {
-                            
-                            return value.node;
-                        },
                         default() {
-                            return value.node;
-                        }
+                            throw new NotImplemented(checker.typeToString(is.type));
+                        },
                     });
                 }
             },
             [ts.TypeFlags.TypeParameter]() {
+                // TODO: specifybehaviour based on configuration
+
                 const baseConstraintType = checker.getBaseConstraintOfType(is.type);
                 assert(baseConstraintType != null, 'asserts baseTypes != null');
+
                 // TODO: figure out how to use `<T extends BaseType = DefaultType>`
                 const any = checker.getAnyType();
                 return generateTypeCheckExpression({ type: baseConstraintType }, { node: value.node, type: any });
             },
             default() {
-                log(checker.typeToString(is.type));
-                return value.node;
+                throw new NotImplemented(`missing type check for: ${checker.typeToString(is.type)}`);
             },
         });
     }
@@ -398,7 +403,7 @@ export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts
 
     const typeCheckGenerator = createTypeCheckGenerator(checker, context);
 
-    // is<{is}>({value.nde}: {value.type})
+    // is<{is}>({value.node}: {value.type})
     const isNode = node.typeArguments[0];
     const isType = checker.getTypeFromTypeNode(isNode);
 

@@ -5,7 +5,7 @@ type ParameterLike = string | ts.Identifier | ts.ParameterDeclaration;
 /**
  * 
  */
-export function createArrowFunction(context: ts.TransformationContext, parameters: ParameterLike[], body: ts.ConciseBody) {
+export function createArrowFunction(context: ts.TransformationContext, typeParameters: ts.TypeParameterDeclaration[] | undefined, parameters: ParameterLike[], body: ts.ConciseBody) {
     const params = parameters.map(parameter => {
         if (typeof parameter === 'string' || parameter.kind === ts.SyntaxKind.Identifier) {
             return context.factory.createParameterDeclaration(
@@ -19,7 +19,7 @@ export function createArrowFunction(context: ts.TransformationContext, parameter
     });
     return context.factory.createArrowFunction(
         /** modifiers */ void 0,
-        /** typeParameters */ void 0,
+        typeParameters,
         params,
         /** type */ void 0,
         /** equalsGreaterThanToken */ void 0,

@@ -1,9 +1,9 @@
 import ts from 'typescript';
 import { is } from 'ts-transform-runtime-check';
 
-import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '../config';
-import { MarkedTransformer, ShouldTransform, transformers } from '../transformers';
-import { useLogger, warn, Logger } from '../log';
+import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '@/config';
+import { MarkedTransformer, ShouldTransform, transformers } from '@/transformers';
+import { useLogger, warn, Logger } from '@/log';
 import { createContextTransformer } from './createContextTransformer';
 import { noopContextTransformer } from './noop';
 
@@ -25,6 +25,7 @@ function findSourceFileForModuleSpecifier(program: ts.Program, moduleSpecifier: 
 }
 
 /**
+ * TODO: this can be improved
  * Wraps the logger to remove annoying reference properties on `Node` and `Type` values
  */
 function createDebugLogger(logger: Logger) {
@@ -75,6 +76,7 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
     let packageSymbolTable: ts.SymbolTable;
 
     // first try and find the package as if it has a normal definition `import { } from 'PACKAGE_MODULE_SPECIFIER'`
+    // TODO: program.getResolvedModuleWithFailedLookupLocationsFromCache maybe?
     const packageSourceFile = findSourceFileForModuleSpecifier(program, options.PackageModuleName);
 
     if (packageSourceFile) {
@@ -99,11 +101,9 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
         }
     }
 
-    const transformerEntries = [...packageSymbolTable as Map<ts.__String, ts.Symbol>].map(([name, symbol]) => {
-        const transformer = transformers.find(transformer => transformer.name === name);
-        if (!transformer) {
-            throw new Error('no transformer found for type declaration ' + name);
-        }
+    const transformerEntries = [...packageSymbolTable as Map<ts.__String, ts.Symbol>].filter(([name]) => transformers.find(transformer => transformer.name === name)).map(([name, symbol]) => {
+        const transformer = transformers.find(transformer => transformer.name === name)!;
+
         return [
             transformer.createShouldTransform(symbol.valueDeclaration),
             transformer,

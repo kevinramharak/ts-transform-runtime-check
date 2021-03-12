@@ -1,7 +1,7 @@
 import ts from 'typescript';
-import { IPackageOptions, IPublicPackageOptions } from '../config';
-import { MarkedTransformer, ShouldTransform } from '../transformers';
-import { MarkedVisitor, visitors } from '../visitors';
+import { IPackageOptions, IPublicPackageOptions } from '@/config';
+import { MarkedTransformer, ShouldTransform } from '@/transformers';
+import { MarkedVisitor, visitors } from '@/visitors';
 
 // TODO: is recursion needed/possible?
 /**

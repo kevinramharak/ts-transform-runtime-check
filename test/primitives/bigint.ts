@@ -1,7 +1,7 @@
 
-import { is } from '@test/ts-transform-runtime-check';
+import { is } from '@transformer';
 import { expect } from 'chai';
-import { bigint, boolean, cls, fn, number, string, symbol, unique } from '../values';
+import { bigint, boolean, cls, fn, number, string, symbol, unique } from '@test/values';
 
 const isTrue = [
     is<bigint>(bigint),

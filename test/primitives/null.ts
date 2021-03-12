@@ -1,7 +1,7 @@
 
-import { is } from '@test/ts-transform-runtime-check';
+import { is } from '@transformer';
 import { expect } from 'chai';
-import { boolean, cls, fn, number, string } from '../values';
+import { boolean, cls, fn, number, string } from '@test/values';
 
 const isTrue = [
     is<null>(null),

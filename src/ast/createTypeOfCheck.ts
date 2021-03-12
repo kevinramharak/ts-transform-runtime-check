@@ -1,6 +1,6 @@
 
 import ts from 'typescript';
-import { TypeOfResult } from '../semantics';
+import { TypeOfResult } from '@/semantics';
 
 /**
  * 

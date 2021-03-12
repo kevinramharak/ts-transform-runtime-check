@@ -1,10 +1,11 @@
-import { convertCompilerOptionsFromJson } from 'typescript';
+import ts from 'typescript';
 import { expect } from 'chai';
 
 import { createEnvironment } from './createEnvironment';
 
 import { compilerOptions as rootCompilerOptions } from '../tsconfig.json';
 import { compilerOptions as testCompilerOptions } from './tsconfig.json';
+
 import { createModule } from './createModule';
 import { readdirSync } from 'fs';
 
@@ -16,9 +17,9 @@ function getObjectFileNames() {
     return readdirSync('test/objects', { withFileTypes: true }).filter(type => type.isFile() && type.name.endsWith('.ts')).map(type => type.name.replace('.ts', ''));
 }
 
-const PackageModuleName = '@test/ts-transform-runtime-check';
+const PackageModuleName = '@transformer';
 
-const compilerOptionsResult = convertCompilerOptionsFromJson(Object.assign({}, rootCompilerOptions, testCompilerOptions), '.');
+const compilerOptionsResult = ts.convertCompilerOptionsFromJson(Object.assign({}, rootCompilerOptions, testCompilerOptions), '.');
 expect(compilerOptionsResult.errors.length).to.equal(0);
 const compilerOptions = compilerOptionsResult.options;
 
@@ -28,6 +29,7 @@ describe('ts-transform-runtime-check', () => {
         createProgram,
         emit,
         compileString,
+        transformString,
         assertNoDiagnostics,
     } = createEnvironment(compilerOptions, { PackageModuleName, debug: true });
 
@@ -68,6 +70,24 @@ describe('ts-transform-runtime-check', () => {
                 expect(test).to.be.a('function');
                 test();
             });
+        });
+    });
+
+    describe('notepad', () => {
+        it('debug', () => {
+            const result = transformString(
+                ['is', 'createIs'],
+                `
+
+type Has<P extends PropertyKey, K> = {
+    [key in P]: K;
+}
+
+is<Has<'property', boolean>>({ property: boolean } as any)
+
+                `
+            );
+            console.log(result);
         });
     });
 });

@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { IPackageOptions } from '../config';
+import { IPackageOptions } from '@/config';
 
 visitImportDeclaration.kind = ts.SyntaxKind.ImportDeclaration;
 

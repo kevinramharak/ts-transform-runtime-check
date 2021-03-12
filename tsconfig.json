@@ -14,7 +14,11 @@
     "sourceMap": true,
     "removeComments": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": {},
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
     "plugins": [
       { "transform": "ts-transform-runtime-check/lib/transformer" }
     ]
