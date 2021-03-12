@@ -1,6 +1,6 @@
 {
     "name": "ts-transform-runtime-check",
-    "version": "0.0.1-alpha19",
+    "version": "0.0.1-alpha20",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "readme": "readme.md",
