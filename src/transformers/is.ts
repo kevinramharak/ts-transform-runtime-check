@@ -389,6 +389,8 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
                                 return context.factory.createTrue();
                             }
 
+                            // TODO: what happens with properties that have a function signature
+
                             const checks = properties.map((symbol) => {
                                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                                 const type = checker.getTypeOfPropertyOfType(is.type, symbol.name)!;
