@@ -2,7 +2,6 @@
 import {} from 'ts-expose-internals';
 
 import ts from 'typescript';
-import { createArrowFunction } from '@/ast';
 import { IPackageOptions } from '@/config';
 import { CreateShouldTransform } from './types';
 import { createTypeCheckGenerator } from './is';
@@ -40,6 +39,7 @@ export function createIs(node: ts.CallExpression, checker: ts.TypeChecker, conte
     const parameterIdentifier = context.factory.createIdentifier('value');
     const generateTypeCheck = createTypeCheckGenerator(checker, context);
     const expression = generateTypeCheck({ type: isType }, { node: parameterIdentifier, type: checker.getAnyType() });
+    const parameterDeclaration = context.factory.createParameterDeclaration(void 0, void 0, void 0, parameterIdentifier);
 
-    return createArrowFunction(context, void 0, [parameterIdentifier], expression);
+    return context.factory.createArrowFunction(void 0, void 0, [parameterDeclaration], void 0, void 0, expression);
 }

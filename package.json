@@ -18,7 +18,8 @@
     "scripts": {
         "build": "ttsc",
         "lint": "eslint . --ext .ts",
-        "test": "mocha --timeout 0 -r tsconfig-paths/register"
+        "test": "mocha --timeout 0 -r tsconfig-paths/register",
+        "bin:transform": "./node_modules/.bin/ts-node -C ttypescript -r tsconfig-paths/register ./bin/transform.ts"
     },
     "author": "Kevin Ramharak <kevin@ramharak.nl>",
     "repository": {

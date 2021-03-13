@@ -1,9 +1,8 @@
 import ts from 'typescript';
-import { is } from 'ts-transform-runtime-check';
 
 import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '@/config';
 import { MarkedTransformer, ShouldTransform, transformers } from '@/transformers';
-import { useLogger, warn, Logger } from '@/log';
+import { useLogger, warn, Logger } from '@/util/log';
 import { createContextTransformer } from './createContextTransformer';
 import { noopContextTransformer } from './noop';
 
@@ -25,7 +24,7 @@ function findSourceFileForModuleSpecifier(program: ts.Program, moduleSpecifier: 
 }
 
 /**
- * TODO: this can be improved
+ * TODO: This is a hack, move to a logger library
  * Wraps the logger to remove annoying reference properties on `Node` and `Type` values
  */
 function createDebugLogger(logger: Logger) {
@@ -68,10 +67,10 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
         useLogger(createDebugLogger(console));
     }
 
-    if (!is<IPackageOptions>(options)) {
-        throw new TypeError('invalid configuration object');
-    }
-
+    // TODO: implement this when its actually able to self host
+    // if (!is<IPackageOptions>(options)) {
+    //     throw new TypeError('invalid configuration object');
+    // }
 
     let packageSymbolTable: ts.SymbolTable;
 

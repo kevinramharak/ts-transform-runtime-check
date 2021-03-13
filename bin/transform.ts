@@ -1,7 +1,6 @@
 
 import ts from 'typescript';
 
-import { DefaultPackageOptions } from '../src/config';
 import { createEnvironment } from '../test/createEnvironment';
 
 function printHelp() {
@@ -19,7 +18,7 @@ function printHelp() {
 
     let input = '';
     if (args.includes('--file')) {
-        input = require('fs').readFileSync(args[args.indexOf('--file') + 1]);
+        input = require('fs').readFileSync(args[args.indexOf('--file') + 1], { encoding: 'utf-8' });
     } else if (args.includes('--string')) {
         input = args[args.indexOf('--string') + 1];
     } else {
