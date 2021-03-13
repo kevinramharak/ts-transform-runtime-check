@@ -20,7 +20,8 @@
       "@test/*": ["test/*"]
     },
     "plugins": [
-      { "transform": "ts-transform-runtime-check/lib/transformer" }
+      { "transform": "@zerollup/ts-transform-paths" },
+      { "transform": "./lib/transformer/index.js" }
     ]
   },
   "include": [

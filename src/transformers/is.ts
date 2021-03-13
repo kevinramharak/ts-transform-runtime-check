@@ -273,42 +273,42 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
             },
             [ts.TypeFlags.Object]() {
                 // TODO: add compile time evaluation
-                if (checker.isTupleType(is.type)) {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    const types = (is.type as ts.GenericType).typeArguments!;
-                    const is_array = createIsArrayCheck(context, value.node);
-                    const has_n_length = context.factory.createStrictEquality(
-                        context.factory.createPropertyAccessExpression(value.node, 'length'),
-                        context.factory.createNumericLiteral(types.length),
-                    );
-                    const any = checker.getAnyType();
-                    return types.map((type, index) => {
-                        const node = context.factory.createElementAccessExpression(value.node, index);
-                        return generateTypeCheckExpression({ type }, { node, type: any });
-                    }).reduce((lhs, rhs) => {
-                        return context.factory.createLogicalAnd(lhs, rhs);
-                    }, context.factory.createLogicalAnd(
-                        is_array,
-                        has_n_length,
-                    ));
-                } else if (checker.isArrayType(is.type)) {
-                    const is_array = createIsArrayCheck(context, value.node);
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    const type = (is.type as ts.GenericType).typeArguments![0];
-                    return branch(type.flags, {
-                        [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
-                            return is_array;
-                        },
-                        default() {
-                            const identifier = context.factory.createIdentifier('item');
-                            const any = checker.getAnyType();
-                            const check = generateTypeCheckExpression({ type }, { node: identifier, type: any });
-                            const predicate = createArrowFunction(context, void 0, [identifier], check);
-                            const rhs = context.factory.createMethodCall(value.node, 'every', [predicate]);
-                            return context.factory.createLogicalAnd(is_array, rhs);
-                        }
-                    });
-                } else {
+                // if (checker.isTupleType(is.type)) {
+                //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                //     const types = (is.type as ts.GenericType).typeArguments!;
+                //     const is_array = createIsArrayCheck(context, value.node);
+                //     const has_n_length = context.factory.createStrictEquality(
+                //         context.factory.createPropertyAccessExpression(value.node, 'length'),
+                //         context.factory.createNumericLiteral(types.length),
+                //     );
+                //     const any = checker.getAnyType();
+                //     return types.map((type, index) => {
+                //         const node = context.factory.createElementAccessExpression(value.node, index);
+                //         return generateTypeCheckExpression({ type }, { node, type: any });
+                //     }).reduce((lhs, rhs) => {
+                //         return context.factory.createLogicalAnd(lhs, rhs);
+                //     }, context.factory.createLogicalAnd(
+                //         is_array,
+                //         has_n_length,
+                //     ));
+                // } else if (checker.isArrayType(is.type)) {
+                //     const is_array = createIsArrayCheck(context, value.node);
+                //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                //     const type = (is.type as ts.GenericType).typeArguments![0];
+                //     return branch(type.flags, {
+                //         [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
+                //             return is_array;
+                //         },
+                //         default() {
+                //             const identifier = context.factory.createIdentifier('item');
+                //             const any = checker.getAnyType();
+                //             const check = generateTypeCheckExpression({ type }, { node: identifier, type: any });
+                //             const predicate = createArrowFunction(context, void 0, [identifier], check);
+                //             const rhs = context.factory.createMethodCall(value.node, 'every', [predicate]);
+                //             return context.factory.createLogicalAnd(is_array, rhs);
+                //         }
+                //     });
+                // } else {
                     return branch((is.type as ts.ObjectType).objectFlags, {
                         [ts.ObjectFlags.Class]() {
                             // TODO: config.flag to enable/disable using class types as interfaces
@@ -358,7 +358,7 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
                             throw new NotImplemented(checker.typeToString(is.type));
                         },
                     });
-                }
+                // }
             },
             [ts.TypeFlags.TypeParameter]() {
                 // TODO: specifybehaviour based on configuration

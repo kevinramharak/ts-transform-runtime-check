@@ -22,7 +22,7 @@ export interface GeneralDiagnostic {
 
 export type Diagnostic = FileDiagnostic | GeneralDiagnostic;
 
-type TransformerOptions = Partial<IPackageOptions> & Pick<IPackageOptions, 'PackageModuleName'>;
+export type TransformerOptions = Partial<IPackageOptions> & Pick<IPackageOptions, 'PackageModuleName'>;
 
 function formatDiagnostic(diagnostic: Diagnostic = { message: 'stub diagnostic' }) {
     return typeof (diagnostic as FileDiagnostic).file === 'string' ? `${(diagnostic as FileDiagnostic).file}:${(diagnostic as FileDiagnostic).line}:${(diagnostic as FileDiagnostic).character} ${diagnostic.message}` : diagnostic.message;
