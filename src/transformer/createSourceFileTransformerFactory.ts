@@ -1,57 +1,41 @@
 import ts from 'typescript';
 
 import { DefaultPackageOptions, IPackageOptions, IPublicPackageOptions } from '@/config';
-import { MarkedTransformer, ShouldTransform, transformers } from '@/transformers';
+import { MarkedTransformer, ShouldTransform, transformers as transformerFactories } from '@/transformers';
 import { useLogger, warn, Logger } from '@/util/log';
 import { createContextTransformer } from './createContextTransformer';
 import { noopContextTransformer } from './noop';
 
-function findSourceFileForModuleSpecifier(program: ts.Program, moduleSpecifier: string) {
-    // NOTE: this took a long time to figure out, not sure why there isn't a simpler api for this
-    const sourceFiles = program.getSourceFiles();
-    const sourceFileWithResolvedReference = sourceFiles.find(sourceFile => {
-        return sourceFile.resolvedModules && sourceFile.resolvedModules.has(moduleSpecifier);
-    });
-    if (!sourceFileWithResolvedReference) {
-        return;
-    }
-    const resolvedModuleInfo = sourceFileWithResolvedReference.resolvedModules!.get(moduleSpecifier);
-
-    if (resolvedModuleInfo && resolvedModuleInfo.resolvedFileName) {
-        const packageSourcefile = program.getSourceFile(resolvedModuleInfo.resolvedFileName);
-        return packageSourcefile;
-    }
-}
-
 /**
- * TODO: This is a hack, move to a logger library
- * Wraps the logger to remove annoying reference properties on `Node` and `Type` values
+ * NOTE: this assumes there is only 1 file with relevant exports or 1 single ambient module declaration
  */
-function createDebugLogger(logger: Logger) {
-    const methods = [
-        'debug',
-        'error',
-        'info',
-        'log',
-        'warn',
-    ] as const;
+function getExportsSymbolTableForModuleSpecifier(program: ts.Program, checker: ts.TypeChecker, moduleSpecifier: string): ts.SymbolTable | undefined {
+    // NOTE: this took a long time to figure out, not sure why there isn't a simpler api for this
 
-    let _logger: Logger = {} as Logger;
-    methods.forEach(name => {
-        const fn = logger[name];
-        _logger[name] = (...input: unknown[]) => {
-            fn.apply(logger, input.map(value => {
-                if (value != null && (value as any).checker) {
-                    delete (value as any).checker;
+    // either find the sourcefile and use the exports table
+    for (const sourceFile of program.getSourceFiles()) {
+        if (sourceFile.resolvedModules && sourceFile.resolvedModules.has(moduleSpecifier)) {
+            const resolvedModuleInfo = sourceFile.resolvedModules.get(moduleSpecifier);
+            // sometimes the map does have the key, but the value is undefined (wtf)
+            if (resolvedModuleInfo) {
+                const packageSourceFile = program.getSourceFile(resolvedModuleInfo.resolvedFileName);
+                if (packageSourceFile) {
+                    if (packageSourceFile.symbol.exports) {
+                        return packageSourceFile.symbol.exports;
+                    }
+                    throw new Error(`'${moduleSpecifier}' source file was found but has no exports`)
                 }
-                return value;
-            }));
-        };
-    });
-    _logger['assert'] = (condition, ...input) => {
-        logger.assert(condition, input);
-    };
-    return _logger;
+            }
+        }
+    }
+
+    const ambientModule = checker.tryFindAmbientModuleWithoutAugmentations(moduleSpecifier);
+    if (ambientModule) {
+        if (ambientModule.exports) {
+            ambientModule.exports;
+        }
+        throw new Error(`'${moduleSpecifier}' ambient declaration was found but has no exports`);
+    }
 }
 
 /**
@@ -63,51 +47,36 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
     const options = Object.assign({}, DefaultPackageOptions, _options) as IPackageOptions;
     const checker = program.getTypeChecker();
 
-    if (options.debug) {
-        useLogger(createDebugLogger(console));
-    }
-
     // TODO: implement this when its actually able to self host
     // if (!is<IPackageOptions>(options)) {
     //     throw new TypeError('invalid configuration object');
     // }
 
-    let packageSymbolTable: ts.SymbolTable;
-
-    // first try and find the package as if it has a normal definition `import { } from 'PACKAGE_MODULE_SPECIFIER'`
-    // TODO: program.getResolvedModuleWithFailedLookupLocationsFromCache maybe?
-    const packageSourceFile = findSourceFileForModuleSpecifier(program, options.PackageModuleName);
-
-    if (packageSourceFile) {
-        if (packageSourceFile.symbol.exports) {
-            packageSymbolTable = packageSourceFile.symbol.exports;
-        } else {
-            // we found the source file, but it has no exports
-            warn(`'${options.PackageModuleName}' package was found but has no exports, defaulting to a noop transformer`);
+    try {
+        const packageExportsSymbolTable = getExportsSymbolTableForModuleSpecifier(program, checker, options.PackageModuleName);
+        if (!packageExportsSymbolTable) {
+            warn(`no import found for '${options.PackageModuleName}, defaulting to a noop transformer'`);
             return noopContextTransformer;
         }
-    } else {
-        // then attempt to find it as an ambient module declaration
-        const ambientModules = checker.getAmbientModules();
-        // NOTE: module.name has double quotes surrounding its name
-        const moduleSymbol = ambientModules.find(module => module.name === `"${options.PackageModuleName}"`);
-        if (moduleSymbol && moduleSymbol.exports) {
-            packageSymbolTable = moduleSymbol.exports;
-        } else {
-            // we found the ambient declaration file, but it has no exports
-            warn(`'${options.PackageModuleName}' ambient declaration was found but has no exports, defaulting to a noop transformer`);
-            return noopContextTransformer;
+
+        const transformers: [ShouldTransform, MarkedTransformer][] = [];
+        for (const [name, symbol] of (packageExportsSymbolTable as Map<string, ts.Symbol>).entries()) {
+            const transformer = transformerFactories.find(transformer => transformer.name === name);
+            if (transformer) {
+                // NOTE: the `unknown` cast is needed because of the power of typescript 'branded' types
+                transformers.push([
+                    transformer.createShouldTransform(symbol.valueDeclaration),
+                    transformer,
+                ] as unknown as [ShouldTransform, MarkedTransformer]);
+            }
+            warn(`${name} has no transformer factory`);
         }
+    
+        return createContextTransformer(checker, transformers, options);
+    } catch (e: unknown) {
+        if (e instanceof Error) {
+            warn(e.message);
+        }
+        throw e;
     }
-
-    const transformerEntries = [...packageSymbolTable as Map<ts.__String, ts.Symbol>].filter(([name]) => transformers.find(transformer => transformer.name === name)).map(([name, symbol]) => {
-        const transformer = transformers.find(transformer => transformer.name === name)!;
-
-        return [
-            transformer.createShouldTransform(symbol.valueDeclaration),
-            transformer,
-        ] as [ShouldTransform<any>, MarkedTransformer<any>];
-    });
-
-    return createContextTransformer(checker, transformerEntries, options);
 }

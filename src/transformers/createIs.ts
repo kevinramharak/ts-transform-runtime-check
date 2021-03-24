@@ -37,7 +37,7 @@ export function createIs(node: ts.CallExpression, checker: ts.TypeChecker, conte
     const isType = checker.getTypeFromTypeNode(isNode);
 
     const parameterIdentifier = context.factory.createIdentifier('value');
-    const generateTypeCheck = createTypeCheckGenerator(checker, context);
+    const generateTypeCheck = createTypeCheckGenerator(checker, context, options);
     const expression = generateTypeCheck({ type: isType }, { node: parameterIdentifier, type: checker.getAnyType() });
     const parameterDeclaration = context.factory.createParameterDeclaration(void 0, void 0, void 0, parameterIdentifier);
 

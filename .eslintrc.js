@@ -18,6 +18,17 @@ module.exports = {
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
     ],
     rules: {
-        "@typescript-eslint/explicit-module-boundary-types": "off"
-    }
-}
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "warn",
+            {
+                vars: "all",
+                args: "all",
+                caughtErrors: "all",
+                varsIgnorePattern: "^_",
+                argsIgnorePattern: "^_",
+                caughtErrorsIgnorePattern: "^_",
+            },
+        ],
+    },
+};

@@ -8,7 +8,7 @@ export type Branches<R, T extends () => R> = Record<Index, T> & { default: T };
  * see: https://www.stefanjudis.com/today-i-learned/property-order-is-predictable-in-javascript-objects-since-es2015/
  */
 export function branch<R, F extends number, T extends (this: Branches<R, (flag?: F) => R>, flag?: F) => R>(type: F, branches: Branches<R, T>) {
-    const index = Object.keys(branches).find(flag => type & Number(flag))!;
-    const branch = branches[index] || branches.default;
+    const index = Object.keys(branches).find(flag => type & Number(flag));
+    const branch = index ? branches[index] : branches.default;
     return branch.call(branches);
 }

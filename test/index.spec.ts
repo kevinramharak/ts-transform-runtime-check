@@ -17,15 +17,17 @@ function getObjectFileNames() {
     return readdirSync('test/objects', { withFileTypes: true }).filter(type => type.isFile() && type.name.endsWith('.ts')).map(type => type.name.replace('.ts', ''));
 }
 
-const PackageModuleName = '@transformer';
+const PackageModuleName = '@lib';
+const localCompilerOptions: Partial<ts.CompilerOptions> = {};
 
-const compilerOptionsResult = ts.convertCompilerOptionsFromJson(Object.assign({}, rootCompilerOptions, testCompilerOptions), '.');
+const compilerOptionsResult = ts.convertCompilerOptionsFromJson(Object.assign({}, rootCompilerOptions, testCompilerOptions, localCompilerOptions), '.');
 expect(compilerOptionsResult.errors.length).to.equal(0);
 const compilerOptions = compilerOptionsResult.options;
 
 describe('ts-transform-runtime-check', () => {
     const {
-        fs,
+        system,
+        host,
         createProgram,
         emit,
         compileString,
@@ -43,7 +45,7 @@ describe('ts-transform-runtime-check', () => {
                 const program = createProgram([fileName]);
                 const { diagnostics } = emit(program, fileName);
                 assertNoDiagnostics(diagnostics);
-                const contents = fs.get(outputName);
+                const contents = system.readFile(outputName);
                 expect(contents).to.be.a('string');
                 const mod = createModule<{ test: () => void }>(outputName, contents!);
                 const { test } = mod.exports;
@@ -63,7 +65,7 @@ describe('ts-transform-runtime-check', () => {
                 const program = createProgram([fileName]);
                 const { diagnostics } = emit(program, fileName);
                 assertNoDiagnostics(diagnostics);
-                const contents = fs.get(outputName);
+                const contents = system.readFile(outputName);
                 expect(contents).to.be.a('string');
                 const mod = createModule<{ test: () => void }>(outputName, contents!);
                 const { test } = mod.exports;
@@ -74,17 +76,12 @@ describe('ts-transform-runtime-check', () => {
     });
 
     describe('notepad', () => {
-        it('debug', () => {
+        it('notepad', () => {
             const result = transformString(
                 ['is', 'createIs'],
                 `
-
-type Has<P extends PropertyKey, K> = {
-    [key in P]: K;
-}
-
-is<Has<'property', boolean>>({ property: boolean } as any)
-
+is<number>(42);
+let a: string[] = [];
                 `
             );
             console.log(result);

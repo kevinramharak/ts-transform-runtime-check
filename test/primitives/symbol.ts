@@ -1,5 +1,5 @@
 
-import { is } from '@transformer';
+import { is } from '@lib';
 import { expect } from 'chai';
 import { symbol, unique, bigint, boolean, cls, fn, number, string } from '@test/values';
 

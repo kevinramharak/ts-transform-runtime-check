@@ -57,20 +57,9 @@ export function createEnvironment(options: ts.CompilerOptions, transformerOption
     const fs = tsvfs.createDefaultMapFromNodeModules(options);
     const system = tsvfs.createFSBackedSystem(fs, process.cwd(), ts);
 
-    
-    // override the `getCurrentDirectory()`
-    // see: https://github.com/microsoft/TypeScript-Website/issues/1669
-    system.getCurrentDirectory = () => process.cwd();
-    
     const host = tsvfs.createVirtualCompilerHost(system, options, ts).compilerHost;
-    
-    const typeDefs = readFileSync('./lib/index.d.ts', { encoding: 'utf-8' }).replace(/([\s])declare /gm, '$1');
-    writeFileSync('test/types.d.ts', `declare module '${transformerOptions.PackageModuleName}' {\n${typeDefs.trim()}\n}`);
-    
-    const rootNames = ['test/types.d.ts', 'test/values.ts'];
 
     const environment = {
-        fs,
         system,
         host,
         compileString(imports: string[], input: string, inlineTransformerOptions: Partial<IPackageOptions> = {}) {
@@ -84,15 +73,15 @@ output: {
     ${input}
 }
             `.trim();
-            fs.set(tempFile, template);
+            host.writeFile(tempFile, template, false);
             const program = ts.createProgram({
-                rootNames: [...rootNames, tempFile],
+                rootNames: [tempFile],
                 options,
                 host,
             });
             const { diagnostics } = environment.emit(program, tempFile, inlineTransformerOptions);
             environment.assertNoDiagnostics(diagnostics);
-            const result =  fs.get(tempFile.replace('.ts', '.js'));
+            const result =  system.readFile(tempFile.replace('.ts', '.js'));
             if (!result) {
                 throw new Error(`failed to compile string: '${input}'`);
             }
@@ -131,9 +120,9 @@ output: {
     ${input}
 }
             `.trim();
-            fs.set(tempFile, template);
+            host.writeFile(tempFile, template, false);
             const program = ts.createProgram({
-                rootNames: [...rootNames, tempFile],
+                rootNames: [tempFile],
                 options,
                 host,
             });
@@ -182,7 +171,7 @@ ${transformationResult}
         },
         createProgram(files: string[], compilerOptions: Partial<ts.CompilerOptions> = {}) {
             return ts.createProgram({
-                rootNames: [...rootNames, ...files],
+                rootNames: [...files],
                 options: Object.assign({}, options, compilerOptions),
                 host,
             });

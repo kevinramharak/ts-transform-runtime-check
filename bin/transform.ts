@@ -28,7 +28,7 @@ function printHelp() {
 
 
     const env = createEnvironment(ts.getDefaultCompilerOptions(), {
-        PackageModuleName: '@transformer'
+        PackageModuleName: '@lib'
     });
     const result = env.transformString(['createIs', 'is'], input);
     console.log(result);

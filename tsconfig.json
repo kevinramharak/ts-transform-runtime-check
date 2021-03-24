@@ -16,6 +16,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
+      "@lib": ["lib/"],
       "@/*": ["src/*"],
       "@test/*": ["test/*"]
     },

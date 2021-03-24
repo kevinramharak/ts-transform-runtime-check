@@ -1,7 +1,5 @@
 
 // TODO: missing features
-// - extends<A>(B: any): B extends A
-// - ?<A>(value: B): A extends B
 // - cache checks, Share the cache with createIs
 // - ignore @internal flagged properties
 // - use json-schema's (at compile time and at runtime?)
@@ -27,6 +25,7 @@ export function is<T>(value: unknown): value is T {
 export function createIs<T>(): (value: unknown) => value is T {
     throw new StubError(createIs.name);
 }
+
 
 /**
  * alias type to allow this to change easily
