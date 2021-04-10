@@ -32,7 +32,7 @@ function getExportsSymbolTableForModuleSpecifier(program: ts.Program, checker: t
     const ambientModule = checker.tryFindAmbientModuleWithoutAugmentations(moduleSpecifier);
     if (ambientModule) {
         if (ambientModule.exports) {
-            ambientModule.exports;
+            return ambientModule.exports;
         }
         throw new Error(`'${moduleSpecifier}' ambient declaration was found but has no exports`);
     }
