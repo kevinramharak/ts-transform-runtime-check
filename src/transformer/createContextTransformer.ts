@@ -12,15 +12,19 @@ import { MarkedVisitor, visitors } from '@/visitors';
  */
 export function createNodeVisitor(visitors: MarkedVisitor[], transformers: [ShouldTransform, MarkedTransformer][], checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions) {
     return function nodeVisitor(node: ts.Node): ts.Node | undefined {
-        const [_, transformer] = transformers.find(([shouldTransform, transformer]) => transformer.kind === node.kind && shouldTransform(node, checker, context, options)) || [];
-        if (transformer) {
-            return transformer(node, checker, context, options);
-        }
-        const visitor = visitors.find(visitor => visitor.kind === node.kind);
-        if (visitor) {
-            return visitor(node, checker, context, options);
-        }
-        return ts.visitEachChild(node, nodeVisitor, context);
+        const transformed = transformers.reduce((node, [shouldTransform, transformer]) => {
+            if (transformer.kind === node.kind && shouldTransform(node, checker, context, options)) {
+                node = transformer(node, checker, context, options);
+            }
+            return node;
+        }, node);
+        const visited = visitors.reduce((node: ts.Node | undefined, visitor) => {
+            if (node && visitor.kind === node.kind) {
+                node = visitor(node, checker, context, options);
+            }
+            return node;
+        }, transformed);
+        return ts.visitEachChild(visited, nodeVisitor, context);
     }
 }
 
