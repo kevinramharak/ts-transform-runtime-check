@@ -80,8 +80,6 @@ describe('ts-transform-runtime-check', () => {
             const result = transformString(
                 ['is', 'createIs'],
                 `
-is<number>(42);
-let a: string[] = [];
                 `
             );
             console.log(result);

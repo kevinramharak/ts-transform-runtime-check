@@ -3,12 +3,11 @@ import { IPackageOptions, IPublicPackageOptions } from '@/config';
 import { MarkedTransformer, ShouldTransform } from '@/transformers';
 import { MarkedVisitor, visitors } from '@/visitors';
 
-// TODO: is recursion needed/possible?
 /**
- * The difference between a visitor and a transformer is that a visitor will always visit its kind and return.
- * while transformers have a conditional before they execute.
- * for this reason transformers are asked first if they are interested in a node
- * then the visitors are executed
+ * Transformers are applied based on `kind` and `shouldTransform`
+ * Visitors are applied based on `kind`
+ * 
+ * Transformers and visitors should non order reliant
  */
 export function createNodeVisitor(visitors: MarkedVisitor[], transformers: [ShouldTransform, MarkedTransformer][], checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions) {
     return function nodeVisitor(node: ts.Node): ts.Node | undefined {

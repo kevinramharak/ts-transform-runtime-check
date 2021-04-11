@@ -272,7 +272,7 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
                         const isEqual = (is.type as ts.NumberLiteralType).value === (_value.type as ts.NumberLiteralType).value;
                         return isEqual ? context.factory.createTrue() : context.factory.createFalse();
                     },
-                    [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
+                    [ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.NumberLike]() {
                         const rhs = context.factory.createNumericLiteral((is.type as ts.NumberLiteralType).value);
                         return context.factory.createStrictEquality(_value.node, rhs);
                     },
@@ -302,7 +302,7 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
                             (is.type as ts.BigIntLiteralType).value.base10Value === (_value.type as ts.BigIntLiteralType).value.base10Value;
                         return isEqual ? context.factory.createTrue() : context.factory.createFalse();
                     },
-                    [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
+                    [ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.BigIntLike]() {
                         const rhs = context.factory.createBigIntLiteral((is.type as ts.BigIntLiteralType).value);
                         return context.factory.createStrictEquality(_value.node, rhs);
                     },

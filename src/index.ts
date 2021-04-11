@@ -1,6 +1,7 @@
 
 // TODO: missing features
 // - cache checks, Share the cache with createIs
+// - debug/develop mode for extensive error reporting
 // - ignore @internal flagged properties
 // - use json-schema's (at compile time and at runtime?)
 // - type MyType = Schema<url>;

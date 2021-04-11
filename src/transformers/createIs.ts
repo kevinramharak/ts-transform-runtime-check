@@ -15,7 +15,7 @@ const ERROR = {
 createIs.kind = ts.SyntaxKind.CallExpression;
 
 /**
- * @param declaration the `is<T>(value: unknown): value is T` declaration
+ * @param declaration the `createIs<T>() => (value: unknown): value is T` declaration
  */
 createIs.createShouldTransform = function createShouldTransform(declaration: ts.Declaration) {
     return function shouldTransform(node, checker, context, options) {

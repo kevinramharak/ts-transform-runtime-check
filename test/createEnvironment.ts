@@ -2,7 +2,6 @@
 import ts from 'typescript';
 import * as tsvfs from '@typescript/vfs';
 
-import { readFileSync, writeFileSync } from 'fs';
 import process from 'process';
 
 import RuntimeCheck from '@/transformer';
@@ -45,19 +44,13 @@ function normalizeDiagnostic(diagnostic: ts.Diagnostic): Diagnostic {
     }
 }
 
-function annotate<T extends (...args: any[]) => any, C extends any>(func: T, context?: C) {
-    const ref = func;
-    return (...args: unknown[]) => {
-        console.log(new Error().stack);
-        return ref.call(context, ...args);
-    }
-}
-
 export function createEnvironment(options: ts.CompilerOptions, transformerOptions: TransformerOptions) {
     const fs = tsvfs.createDefaultMapFromNodeModules(options);
     const system = tsvfs.createFSBackedSystem(fs, process.cwd(), ts);
 
     const host = tsvfs.createVirtualCompilerHost(system, options, ts).compilerHost;
+
+    host.getCurrentDirectory = () => process.cwd();
 
     const environment = {
         system,
@@ -69,10 +62,7 @@ export function createEnvironment(options: ts.CompilerOptions, transformerOption
             const template = `
 import { ${imports.join(', ')} } from "${inlineTransformerOptions.PackageModuleName}";
 
-output: {
-    ${input}
-}
-            `.trim();
+${input}`;
             host.writeFile(tempFile, template, false);
             const program = ts.createProgram({
                 rootNames: [tempFile],
@@ -85,29 +75,7 @@ output: {
             if (!result) {
                 throw new Error(`failed to compile string: '${input}'`);
             }
-            const extractor = /output:\s*{\s*([\s\S]+)\s*}/m
-            const extracted = result.match(extractor);
-            if (extracted && extracted[1]) {
-                const code = extracted[1];
-                // small hack to strip a trailing semi-colon if it was not present with the input
-                if (!input.endsWith(';') && code.endsWith(';')) {
-                    return code.slice(0, -1);
-                }
-                return code;
-            }
-            throw new Error(`
-failed to extract contents from compiled string.
-
-input:
-------------
-${input}
-------------
-output:
-------------
-${result}
-------------
-            `.trim()
-            );
+            return result;
         },
         transformString(imports: string[], input: string, inlineTransformerOptions: Partial<IPackageOptions> = {}) {
             inlineTransformerOptions = Object.assign({}, transformerOptions, inlineTransformerOptions);
@@ -116,10 +84,7 @@ ${result}
             const template = `
 import { ${imports.join(', ')} } from "${inlineTransformerOptions.PackageModuleName}";
 
-output: {
-    ${input}
-}
-            `.trim();
+${input}`;
             host.writeFile(tempFile, template, false);
             const program = ts.createProgram({
                 rootNames: [tempFile],
@@ -144,30 +109,7 @@ output: {
             printer.writeFile(resultFile, writer, void 0);
 
             const result = writer.getText();
-
-            const extractor = /output:\s*{\s*([\s\S]+)\s*}/m
-            const extracted = result.match(extractor);
-            if (extracted && extracted[1]) {
-                const code = extracted[1];
-                // small hack to strip a trailing semi-colon if it was not present with the input
-                if (!input.endsWith(';') && code.endsWith(';')) {
-                    return code.slice(0, -1);
-                }
-                return code;
-            }
-            throw new Error(`
-failed to extract contents from compiled string.
-
-input:
-------------
-${input}
-------------
-output:
-------------
-${transformationResult}
-------------
-            `.trim()
-            );
+            return result;
         },
         createProgram(files: string[], compilerOptions: Partial<ts.CompilerOptions> = {}) {
             return ts.createProgram({

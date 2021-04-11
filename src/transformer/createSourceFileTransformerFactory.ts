@@ -71,7 +71,7 @@ export function createSourceFileTransformerFactory(program: ts.Program, _options
             }
             warn(`${name} has no transformer factory`);
         }
-    
+
         return createContextTransformer(checker, transformers, options);
     } catch (e: unknown) {
         if (e instanceof Error) {
