@@ -81,8 +81,10 @@ describe('ts-transform-runtime-check', () => {
                 ['is', 'createIs'],
                 `
                 `
-            );
-            console.log(result);
+            ).trim();
+            if (result) {
+                console.log(result);
+            }
         });
     });
 });

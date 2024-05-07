@@ -50,7 +50,7 @@ export function createIsArrayCheck(context: ts.TransformationContext, node: ts.E
 }
 
 /**
- * 
+ *
  */
 export function createTypeOfCheck(context: ts.TransformationContext, value: ts.Expression, type: typeof TypeOfResult[keyof typeof TypeOfResult]) {
     return context.factory.createStrictEquality(
@@ -171,7 +171,7 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
             },
             [ts.TypeFlags.Boolean]() {
                 return branch(_value.type.flags, {
-                    [ts.TypeFlags.BooleanLike]() {
+                    [ts.TypeFlags.Boolean | ts.TypeFlags.BooleanLiteral]() {
                         return context.factory.createTrue();
                     },
                     [ts.TypeFlags.Any | ts.TypeFlags.Unknown]() {
@@ -185,7 +185,8 @@ export function createTypeCheckGenerator(checker: ts.TypeChecker, context: ts.Tr
             [ts.TypeFlags.BooleanLiteral]() {
                 return branch(_value.type.flags, {
                     [ts.TypeFlags.Boolean]() {
-                        return context.factory.createTrue();
+                        const literalValue = checker.typeToString(is.type) === 'true' ? context.factory.createTrue() : context.factory.createFalse();
+                        return context.factory.createStrictEquality(_value.node, literalValue);
                     },
                     [ts.TypeFlags.BooleanLiteral]() {
                         const isEqual = checker.typeToString(is.type) === checker.typeToString(_value.type);
@@ -488,8 +489,21 @@ is.createShouldTransform = function createShouldTransform(declaration: ts.Declar
     }
 } as CreateShouldTransform<ts.CallExpression>;
 
+const instances = new Map<[ts.TypeChecker, ts.TransformationContext, IPackageOptions], ReturnType<typeof createTypeCheckGenerator>>();
+
+export function getTypeCheckGenerator(checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions): ReturnType<typeof createTypeCheckGenerator> {
+    for (const [[a, b, c], d] of instances) {
+        if (checker ===  a && context === b && options === c) {
+            return d;
+        }
+    }
+    const i = createTypeCheckGenerator(checker, context, options);
+    instances.set([checker, context, options], i);
+    return i;
+}
+
 /**
- * 
+ *
  */
 export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts.TransformationContext, options: IPackageOptions): ts.Expression {
     if (!node.typeArguments || node.typeArguments.length !== 1) {
@@ -504,7 +518,7 @@ export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts
         return context.factory.createTrue();
     }
 
-    const typeCheckGenerator = createTypeCheckGenerator(checker, context, options);
+    const typeCheckGenerator = getTypeCheckGenerator(checker, context, options);
 
     // is<{is}>({value.node}: {value.type})
     const isNode = node.typeArguments[0];
@@ -516,7 +530,7 @@ export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts
     // TODO: put this behind a flag
     const wrapInIIFE = true && shouldWrapInIIFE(valueNode);
     const originalValueNode = valueNode;
-    
+
     if (wrapInIIFE) {
         // when: `is<{ x: 2 }>({ x: 2 } as any);`
         // default: `(typeof { x: 2 } != null && { x: 2 }['x'] === 2);`
@@ -524,7 +538,7 @@ export function is(node: ts.CallExpression, checker: ts.TypeChecker, context: ts
         valueNode = context.factory.createIdentifier('literal');
     }
 
-    
+
     let check = typeCheckGenerator({ type: isType }, { node: valueNode, type: valueType });
 
     if (options.addTypeComment) {

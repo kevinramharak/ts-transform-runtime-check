@@ -135,7 +135,7 @@ ${input}`;
             });
 
             const diagnostics: Diagnostic[] = [...ts.getPreEmitDiagnostics(program), ...result.diagnostics].map(normalizeDiagnostic);
-            
+
             return {
                 diagnostics,
             };

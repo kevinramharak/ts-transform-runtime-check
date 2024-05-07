@@ -6,6 +6,8 @@ import { boolean, cls, fn, number, string } from '@test/values';
 const isTrue = [
     is<undefined>(undefined),
     is<void>(undefined),
+    is<void>(void 0),
+    is<void>(void 0),
 ];
 
 const isFalse = [
