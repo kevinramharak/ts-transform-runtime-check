@@ -1,7 +1,10 @@
+## Looking for a production ready version of this idea?
+
+> For TypeScript v4.8+, try [typia](https://typia.io/docs/).
 
 ## ts-transform-runtime-check
-POC idea of generating code to type check values at runtime.  
-The library provides the `is<T>(value: unkown): value is T` function to be used whenever a type needs to be validated at runtime.  
+POC idea of generating code to type check values at runtime.
+The library provides the `is<T>(value: unkown): value is T` function to be used whenever a type needs to be validated at runtime.
 This compiler plugin will generate the code that asserts the type thus providing type safety beyond compile time.
 
 An example program
